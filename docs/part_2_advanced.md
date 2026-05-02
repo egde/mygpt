@@ -34,7 +34,7 @@ Ten chapters that upgrade `mygpt` from a hand-rolled toy to a code base whose ar
 20. [Mixed precision training (bf16)](20_mixed_precision.html)
 21. [Training-loop hardening](21_training_loop_hardening.html)
 22. [BPE from scratch (algorithm)](22_bpe_from_scratch.html)
-23. `BPETokenizer` in `mygpt` *(coming soon)*
+23. [`BPETokenizer` in `mygpt`](23_bpe_tokenizer_in_mygpt.html)
 24. RMSNorm replaces LayerNorm *(coming soon)*
 25. RoPE: rotary position embeddings *(coming soon)*
 26. GQA: grouped-query attention *(coming soon)*
