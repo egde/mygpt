@@ -231,14 +231,46 @@ class LayerNorm(nn.Module):
         return x_normed * self.weight + self.bias
 
 
+class RMSNorm(nn.Module):
+    """Root-mean-square layer norm (Llama / Mistral default).
+
+    Compared to LayerNorm:
+      - drops the bias term,
+      - drops the mean subtraction (no centring),
+      - normalises by the root-mean-square of x along the last axis.
+
+    Forward: ``x / sqrt(mean(x²) + eps) * weight``.
+    """
+
+    def __init__(self, embed_dim: int, eps: float = 1e-5) -> None:
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.eps = eps
+        self.weight = nn.Parameter(torch.ones(embed_dim))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        rms = torch.sqrt(x.pow(2).mean(dim=-1, keepdim=True) + self.eps)
+        return x / rms * self.weight
+
+
+def _make_norm(embed_dim: int, norm_type: str) -> nn.Module:
+    """Norm-class selector. `norm_type` is 'layer' or 'rms'."""
+    if norm_type == "layer":
+        return LayerNorm(embed_dim)
+    if norm_type == "rms":
+        return RMSNorm(embed_dim)
+    raise ValueError(f"unknown norm_type: {norm_type!r} (expected 'layer' or 'rms')")
+
+
 class TransformerBlock(nn.Module):
-    def __init__(self, embed_dim, num_heads, max_seq_len=64, dropout=0.0):
+    def __init__(self, embed_dim, num_heads, max_seq_len=64, dropout=0.0, norm_type="layer"):
         super().__init__()
         self.embed_dim = embed_dim
         self.num_heads = num_heads
-        self.ln1 = LayerNorm(embed_dim)
+        self.norm_type = norm_type
+        self.ln1 = _make_norm(embed_dim, norm_type)
         self.mha = MultiHeadAttention(embed_dim, num_heads, max_seq_len, dropout)
-        self.ln2 = LayerNorm(embed_dim)
+        self.ln2 = _make_norm(embed_dim, norm_type)
         self.mlp = MLP(embed_dim, dropout)
 
     def forward(self, x):
@@ -251,22 +283,23 @@ class GPT(nn.Module):
     """Full GPT-2-style decoder-only transformer with weight-tied head."""
 
     def __init__(self, vocab_size, embed_dim, num_heads, num_layers,
-                 max_seq_len=64, dropout=0.0):
+                 max_seq_len=64, dropout=0.0, norm_type="layer"):
         super().__init__()
         self.vocab_size = vocab_size
         self.embed_dim = embed_dim
         self.num_heads = num_heads
         self.num_layers = num_layers
         self.max_seq_len = max_seq_len
+        self.norm_type = norm_type
 
         self.token_embedding = TokenEmbedding(vocab_size, embed_dim)
         self.position_embedding = nn.Embedding(max_seq_len, embed_dim)
         self.embed_drop = nn.Dropout(dropout)
         self.blocks = nn.Sequential(*[
-            TransformerBlock(embed_dim, num_heads, max_seq_len, dropout)
+            TransformerBlock(embed_dim, num_heads, max_seq_len, dropout, norm_type)
             for _ in range(num_layers)
         ])
-        self.ln_f = LayerNorm(embed_dim)
+        self.ln_f = _make_norm(embed_dim, norm_type)
 
     def forward(self, ids, targets=None):
         B, T = ids.shape
@@ -465,6 +498,7 @@ def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None
                 "num_heads":   model.num_heads,
                 "num_layers":  model.num_layers,
                 "max_seq_len": model.max_seq_len,
+                "norm_type":   getattr(model, "norm_type", "layer"),
             },
         },
         path,
@@ -475,6 +509,8 @@ def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
     """Reload a (model, tokenizer) pair from a checkpoint produced by `save_checkpoint`.
 
     Always loads to CPU; the caller is responsible for `.to(device)` afterwards.
+    Pre-Ch.24 checkpoints have no `norm_type` field; they default to ``"layer"``
+    so old `.ckpt` files continue to load correctly.
     """
     ckpt = torch.load(path, map_location="cpu")
     config = ckpt["config"]
@@ -486,6 +522,7 @@ def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
         num_layers=config["num_layers"],
         max_seq_len=config["max_seq_len"],
         dropout=0.0,
+        norm_type=config.get("norm_type", "layer"),
     )
     model.load_state_dict(ckpt["model_state_dict"])
     return model, tokenizer
@@ -516,12 +553,14 @@ def _train_command(args) -> None:
         num_layers=args.num_layers,
         max_seq_len=args.max_seq_len,
         dropout=args.dropout,
+        norm_type=args.norm,
     ).to(device)
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
     print(f"device:       {device}")
     print(f"precision:    {args.precision}")
+    print(f"norm:         {args.norm}")
     print(f"corpus chars: {len(text):,}")
     print(f"train chars:  {len(train_data):,}")
     if val_data is not None:
@@ -663,6 +702,12 @@ def main() -> None:
         type=float,
         default=0.0,
         help="Gradient-norm clip threshold. 0.0 (default) disables clipping.",
+    )
+    p_train.add_argument(
+        "--norm",
+        choices=["layer", "rms"],
+        default="layer",
+        help="Normalisation: 'layer' (default; LayerNorm, Ch.10) or 'rms' (RMSNorm, Llama default).",
     )
     p_train.set_defaults(func=_train_command)
 
