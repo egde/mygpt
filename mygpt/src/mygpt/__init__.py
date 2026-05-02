@@ -386,6 +386,7 @@ def _train_command(args) -> None:
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
     print(f"device:       {device}")
+    print(f"precision:    {args.precision}")
     print(f"corpus chars: {len(text):,}")
     print(f"vocab_size:   {tokenizer.vocab_size}")
     print(f"params:       {n_params:,}")
@@ -395,7 +396,11 @@ def _train_command(args) -> None:
     for step in range(1, args.steps + 1):
         x, y = get_batch(data, args.batch_size, args.seq_len)
         optimizer.zero_grad()
-        _, loss = model(x, y)
+        if args.precision == "bf16":
+            with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
+                _, loss = model(x, y)
+        else:
+            _, loss = model(x, y)
         loss.backward()
         optimizer.step()
         if step == 1 or step % args.print_every == 0 or step == args.steps:
@@ -412,13 +417,23 @@ def _generate_command(args) -> None:
     model.to(device)
     set_seed(args.seed)
     prompt = tokenizer.encode(args.prompt).unsqueeze(0).to(device)
-    out = generate(
-        model,
-        prompt,
-        max_new_tokens=args.max_new_tokens,
-        temperature=args.temperature,
-        top_k=args.top_k,
-    )
+    if args.precision == "bf16":
+        with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
+            out = generate(
+                model,
+                prompt,
+                max_new_tokens=args.max_new_tokens,
+                temperature=args.temperature,
+                top_k=args.top_k,
+            )
+    else:
+        out = generate(
+            model,
+            prompt,
+            max_new_tokens=args.max_new_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k,
+        )
     print(tokenizer.decode(out[0]))
 
 
@@ -450,6 +465,12 @@ def main() -> None:
         default="auto",
         help="Compute device. 'auto' picks cuda → mps → cpu in that order.",
     )
+    p_train.add_argument(
+        "--precision",
+        choices=["fp32", "bf16"],
+        default="fp32",
+        help="Forward-pass precision. fp32 (default) is bit-deterministic; bf16 uses torch.autocast.",
+    )
     p_train.set_defaults(func=_train_command)
 
     p_gen = sub.add_parser("generate", help="Generate text from a checkpoint.")
@@ -464,6 +485,12 @@ def main() -> None:
         choices=["auto", "cuda", "mps", "cpu"],
         default="auto",
         help="Compute device. 'auto' picks cuda → mps → cpu in that order.",
+    )
+    p_gen.add_argument(
+        "--precision",
+        choices=["fp32", "bf16"],
+        default="fp32",
+        help="Forward-pass precision. fp32 (default) is bit-deterministic; bf16 uses torch.autocast.",
     )
     p_gen.set_defaults(func=_generate_command)
 

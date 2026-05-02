@@ -31,7 +31,7 @@ Ten chapters that upgrade `mygpt` from a hand-rolled toy to a code base whose ar
 ## Chapters
 
 19. [Device-aware training](19_device_aware_training.html)
-20. Mixed precision training (bf16) *(coming soon)*
+20. [Mixed precision training (bf16)](20_mixed_precision.html)
 21. Training-loop hardening *(coming soon)*
 22. BPE from scratch (algorithm) *(coming soon)*
 23. `BPETokenizer` in `mygpt` *(coming soon)*
