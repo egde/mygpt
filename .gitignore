@@ -3,3 +3,11 @@ _site/
 .jekyll-metadata
 Gemfile.lock
 .DS_Store
+chapter_states/**/.venv/
+chapter_states/**/uv.lock
+chapter_states/**/.python-version
+chapter_states/**/__pycache__/
+chapter_states/**/*.ckpt
+chapter_states/**/*.pt
+chapter_states/**/tinyshakespeare.txt
+chapter_states/**/shakespeare_tokenizer.json
