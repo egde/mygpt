@@ -1,7 +1,7 @@
 ---
 title: 17. Training on a real text file
 nav_order: 18
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 17 — Training on a real text file

@@ -1,7 +1,7 @@
 ---
 title: 3. PyTorch in 20 minutes
 nav_order: 4
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 3 — PyTorch in 20 minutes: tensors, autograd, modules

@@ -1,7 +1,7 @@
 ---
 title: 6. Single-head self-attention
 nav_order: 7
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 6 — Single-head self-attention from scratch

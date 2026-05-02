@@ -1,7 +1,7 @@
 ---
 title: 4. How machines learn
 nav_order: 5
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 4 — How machines learn: loss, gradients, gradient descent

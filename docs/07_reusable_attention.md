@@ -1,7 +1,7 @@
 ---
 title: 7. A reusable attention module
 nav_order: 8
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 7 — A reusable attention module

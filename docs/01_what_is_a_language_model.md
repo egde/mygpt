@@ -1,7 +1,7 @@
 ---
 title: 1. What is a language model?
 nav_order: 2
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 1 — What is a language model?

@@ -1,7 +1,7 @@
 ---
 title: 11. The transformer block
 nav_order: 12
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 11 — Putting it together: the transformer block

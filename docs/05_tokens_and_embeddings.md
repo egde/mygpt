@@ -1,7 +1,7 @@
 ---
 title: 5. From text to numbers
 nav_order: 6
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 5 — From text to numbers: tokens and embeddings

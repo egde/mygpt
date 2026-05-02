@@ -1,7 +1,7 @@
 ---
 title: 14. Training loop
 nav_order: 15
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 14 — Training loop: gradient descent in practice

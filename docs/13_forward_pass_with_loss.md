@@ -1,7 +1,7 @@
 ---
 title: 13. The forward pass with loss
 nav_order: 14
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 13 — The forward pass with loss

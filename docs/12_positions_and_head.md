@@ -1,7 +1,7 @@
 ---
 title: 12. Position embeddings and the LM head
 nav_order: 13
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 12 — Position embeddings and the language modeling head

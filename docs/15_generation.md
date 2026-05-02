@@ -1,7 +1,7 @@
 ---
 title: 15. Generation
 nav_order: 16
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 15 — Generation: sampling text from a trained model

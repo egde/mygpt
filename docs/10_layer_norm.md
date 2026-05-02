@@ -1,7 +1,7 @@
 ---
 title: 10. Layer normalization
 nav_order: 11
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 10 — Layer normalization

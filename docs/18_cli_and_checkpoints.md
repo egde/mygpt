@@ -1,7 +1,7 @@
 ---
 title: 18. Checkpoints, inference, and a CLI
 nav_order: 19
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 18 — Checkpoints, inference, and a CLI

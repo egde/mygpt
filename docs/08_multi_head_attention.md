@@ -1,7 +1,7 @@
 ---
 title: 8. Multi-head attention
 nav_order: 9
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 8 — Multi-head attention

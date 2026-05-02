@@ -1,7 +1,7 @@
 ---
 title: 16. A reusable character tokenizer
 nav_order: 17
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 16 — A reusable character tokenizer

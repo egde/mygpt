@@ -1,5 +1,5 @@
-title: LLM Fundamentals
-description: A code-along tutorial that builds a GPT-2-level language model from scratch, in PyTorch, while explaining every concept along the way.
+title: myGPT
+description: A code-along book that builds a tiny GPT-2-level language model from scratch in PyTorch — Part I (LLM Fundamentals) and Part II (Advanced Topics).
 
 remote_theme: just-the-docs/just-the-docs
 plugins:

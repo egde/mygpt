@@ -1,7 +1,7 @@
 ---
 title: 2. Project setup with uv
 nav_order: 3
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 2 — Project setup with `uv`

@@ -1,7 +1,7 @@
 ---
 title: 9. MLP and residual connections
 nav_order: 10
-parent: LLM Fundamentals
+parent: Part I — LLM Fundamentals
 ---
 
 # Chapter 9 — The feed-forward network and residual connections
