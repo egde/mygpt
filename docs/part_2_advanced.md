@@ -36,7 +36,7 @@ Ten chapters that upgrade `mygpt` from a hand-rolled toy to a code base whose ar
 22. [BPE from scratch (algorithm)](22_bpe_from_scratch.html)
 23. [`BPETokenizer` in `mygpt`](23_bpe_tokenizer_in_mygpt.html)
 24. [RMSNorm replaces LayerNorm](24_rmsnorm.html)
-25. RoPE: rotary position embeddings *(coming soon)*
+25. [RoPE: rotary position embeddings](25_rope.html)
 26. GQA: grouped-query attention *(coming soon)*
 27. Modern recipe vs Ch.17 baseline *(coming soon)*
 28. Modern recipe at scale (Wikipedia) *(coming soon)*
