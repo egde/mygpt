@@ -112,7 +112,7 @@ class TransformerBlock(nn.Module):
 
 Two design notes:
 
-- **Pre-norm, not post-norm.** The `ln1` and `ln2` are applied *inside* the residual additions: the residual is added to the *un-normalised* input. The motivation came from §10.5 (cleaner gradients through the residual highway). All modern decoder-only transformers do this.
+- **Pre-norm, not post-norm.** The `ln1` and `ln2` are applied **before** the sub-layer, not after the residual: we compute `x + mha(ln1(x))`, not `ln1(x + mha(x))`. The motivation came from §10.5 (cleaner gradients through the residual highway). All modern decoder-only transformers do this.
 - **Each sub-layer keeps its own dropout.** `MultiHeadAttention` has its `attn_drop` and `out_drop`; `MLP` has its `drop`. The block doesn't add a third dropout — the two sub-modules already cover the standard places GPT-2 drops out.
 
 Then update **`main`** to demonstrate the block:

@@ -395,7 +395,7 @@ That is GPT-2 in miniature: a transformer with 2,240 parameters, trained for 200
 
 ## 15.9 What happens beyond the trained context
 
-Our model was trained with `seq_len = 8`. The position embedding was thus exposed to positions 0..7 during training. For positions 8 and beyond, the position embedding has *never received a gradient* — its weights are still at the random initialisation. Generation past position 7 is therefore extrapolating into untrained territory, and the model's predictions become unreliable.
+Generation past the trained sequence length drifts into garbage because the position embedding at those indices has never received a gradient. Our model trained with `seq_len = 8`, so positions 0..7 are well-trained and positions 8+ are still at the random initialisation. The model's predictions there become unreliable — exactly the failure mode this section demonstrates.
 
 **Save the following to** 📄 `experiments/33_beyond_context.py`:
 

@@ -174,9 +174,9 @@ identical: True
 
 Self-attention's core idea is that every input row plays *three* roles at once:
 
-- as a **query** — the representation that asks "what should I attend to?"
-- as a **key** — the representation that answers "here is what I am, so you can decide whether to attend to me."
-- as a **value** — the representation that gets *carried* into the output if attention chooses you.
+- as a **query** — asking *"what am I looking for?"*
+- as a **key** — answering *"what am I offering?"*
+- as a **value** — carrying *"what content do I contribute, if attention picks me?"*
 
 Concretely, we project the input $X \in \mathbb{R}^{T \times C}$ through three learned linear maps:
 
@@ -186,7 +186,7 @@ $$
 
 where $W_Q, W_K, W_V \in \mathbb{R}^{C \times d_h}$ are the **weight matrices** of three `nn.Linear` layers (no bias), and $d_h$ is the **head dimension**. In this chapter we set $d_h = C$ for simplicity; in Chapter 8 we will set $d_h < C$ and run several heads in parallel.
 
-Why three projections of the *same* input? Because the role a token plays as a query (`"what am I looking for?"`) is generally different from its role as a key (`"what am I offering?"`) or value (`"what content do I contribute?"`). Letting the model learn three separate $C \times d_h$ matrices gives it the freedom to express all three.
+Why three projections of the *same* input? Because the role a token plays as a query is generally different from its role as a key or value. Letting the model learn three separate $C \times d_h$ matrices gives it the freedom to express all three independently.
 
 The shapes after projection:
 

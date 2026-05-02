@@ -78,7 +78,7 @@ $$
 \text{GELU}(x) \;=\; x \cdot \Phi(x),
 $$
 
-where $\Phi$ is the cumulative distribution function (CDF) of the standard normal. In words: GELU multiplies the input by the probability that a standard-normal random variable would be less than it. For very negative $x$, $\Phi(x) \approx 0$ and the output is near zero; for very positive $x$, $\Phi(x) \approx 1$ and the output is near $x$. Around the origin GELU is *smooth* — it has continuous derivatives everywhere, unlike ReLU's kink at zero.
+where $\Phi$ is the cumulative distribution function (CDF) of the standard normal — that is, $\Phi(x) = P(Z \le x)$ where $Z \sim \mathcal{N}(0, 1)$. In words: GELU multiplies the input by the probability that a standard-normal random variable would be less than it. For very negative $x$, $\Phi(x) \approx 0$ and the output is near zero; for very positive $x$, $\Phi(x) \approx 1$ and the output is near $x$. Around the origin GELU is *smooth* — it has continuous derivatives everywhere, unlike ReLU's kink at zero.
 
 PyTorch ships GELU as `nn.GELU` (or `F.gelu`). The two are interchangeable.
 

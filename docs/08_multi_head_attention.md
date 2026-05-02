@@ -6,13 +6,13 @@ parent: LLM Fundamentals
 
 # Chapter 8 — Multi-head attention
 
-In Chapter 6 we built a single attention "head" — one $W_Q$, one $W_K$, one $W_V$, all working in $d_h = C$ dimensions. In Chapter 7 we polished it. In this chapter we do the move that defines modern transformers: run **several heads in parallel** with $d_h = C / h$, then concatenate their outputs.
+In Chapter 6 we built a single attention "head" — one $W_Q$, one $W_K$, one $W_V$, all working in $d_h = C$ dimensions. In Chapter 7 we polished it. In this chapter we do the move that defines modern transformers: run **several heads in parallel** with $d_h = C / h$, then concatenate their outputs. (This requires `embed_dim` to be divisible by `num_heads`; the `MultiHeadAttention` constructor raises `ValueError` otherwise.)
 
 By the end you will have:
 
 - understood **why** multi-head attention helps (each head can specialise),
 - built `mygpt.MultiHeadAttention(embed_dim, num_heads)` with a clean batched implementation that runs all $h$ heads in one matmul via tensor reshape,
-- verified that with `num_heads = 1`, the new module produces output **byte-for-byte identical** to `SingleHeadAttention(C, head_dim=C)` from Chapter 7,
+- verified that with `num_heads = 1`, the new module produces output **byte-for-byte identical** to `SingleHeadAttention(embed_dim=C, head_dim=C)` from Chapter 7,
 - met the four-axis tensor shape `(B, num_heads, T, head_dim)` that every multi-head transformer uses internally.
 
 There is no new mathematics: the operation inside each head is exactly what Chapter 6 already defined. What is new is *how to run $h$ heads in parallel without a Python loop*.

@@ -257,9 +257,11 @@ Saved shakespeare_gpt.pt and shakespeare_tokenizer.json
 
 (Wall-clock seconds will differ on your machine; the loss values will not.)
 
+Two shorthands to keep in mind while reading the curve below: `loss` is the negative log-probability the model assigns the correct next character; `exp(loss)` is the **effective number of characters** the model is still uncertain between. (We will use that second number to read the final loss of `2.08` at the end of this section.)
+
 Read the curve:
 
-- **Step 1: loss ≈ 41.** The randomly-initialised model is *confidently wrong* — its logits happen to point hard at random tokens, and cross-entropy of a confident-wrong prediction is unbounded. (Compare to Ch.14's V=4 toy where step-1 loss was 5.27 — same phenomenon, smaller numbers because there are fewer tokens to be confidently wrong about.)
+- **Step 1: loss ≈ 41.** The randomly-initialised model is *confidently wrong* — its logits happen to point hard at random tokens, and cross-entropy of a confident-wrong prediction is unbounded. (See Ch.13 §13.4 for the full derivation; the principle is identical to Ch.14's V=4 toy where step-1 loss was 5.27 — only the numbers scale with V.)
 - **Step 10: loss ≈ 15.** Already collapsing toward `log(V) ≈ 4.17`; AdamW has knocked the wildly-confident logits down toward a flat distribution.
 - **Step 100: loss ≈ 3.24.** Below the random-baseline `log(V)`. The model now predicts character-level structure better than uniform guessing.
 - **Step 500: loss ≈ 2.59.** It has learned letter co-occurrence ("q" tends to be followed by "u", capital letters start words, line ends are followed by newlines).

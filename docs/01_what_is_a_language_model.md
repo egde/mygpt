@@ -100,7 +100,7 @@ $$
 \mathbf{p} = (0.05,\; 0.10,\; 0.80,\; 0.05), \qquad \sum_{i=0}^{V-1} p_i = 1.
 $$
 
-The model will not return $\mathbf{p}$ directly. It returns a vector of unnormalised real numbers called **logits** — one per token — and we turn the logits into a distribution with a function called **softmax**. We will define softmax in Chapter 5; for now the only thing to remember is *the model's output, after softmax, is a probability distribution over the next token*.
+The model will not return $\mathbf{p}$ directly. It returns a vector of unnormalised real numbers called **logits** — one per token — and we turn the logits into a distribution with a function called **softmax**. We will define softmax in Chapter 6; for now the only thing to remember is *the model's output, after softmax, is a probability distribution over the next token*.
 
 A diagram of the whole picture, before any architecture is decided:
 

@@ -182,6 +182,8 @@ AdamW differs from SGD in three ways. We won't derive any of it; the practical t
 2. **Momentum.** AdamW also maintains an exponentially-weighted average of recent gradients, and updates parameters using that average instead of the latest gradient. This smooths out the trajectory and helps the optimiser cross flat regions.
 3. **Weight decay.** AdamW directly shrinks every parameter toward zero by a small factor each step. This is a regularisation technique that prevents weights from drifting too large.
 
+Concretely: on the §14.5 loss curve below, AdamW reaches loss < 0.02 by step 100 where SGD takes hundreds more (you'll verify this in §14.7 exp 1). The per-parameter step size and the momentum are doing most of that work.
+
 The PyTorch API is identical to `SGD`:
 
 ```python
@@ -218,6 +220,8 @@ for step in range(1, 201):
 ```
 
 Eight of those lines are setup; the loop body is exactly the four lines from §4.5: `zero_grad`, forward, `backward`, `step`. The `if step in ...` is just for printing.
+
+A naming note: each pass through the loop is a **step** (one `optimizer.step()` call). Chapter 4 used **iteration** for the same idea; transformer-training literature prefers "step", so we use that from here on.
 
 **Save the following to** 📄 `experiments/28_train_gpt.py`:
 
@@ -301,6 +305,8 @@ Read this row by row:
 - **Step 200: loss ≈ 0.004.** Three orders of magnitude below random guessing — effectively memorised. Further training would push the loss closer to 0 but with diminishing returns.
 
 That is what *training a transformer* looks like in numbers. A real GPT-2 training run does the same thing on a much bigger corpus, with millions of steps, and a loss curve that looks qualitatively similar — sharp drop early, slow grind later.
+
+(`trained_gpt.pt` is a bare `state_dict` — just the model's weights. Chapter 18 will replace this with a self-contained `.ckpt` that bundles the tokenizer and architecture config alongside the weights, so a single file is enough to reload.)
 
 ---
 

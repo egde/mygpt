@@ -121,6 +121,7 @@ Two things worth flagging:
 
 - **`dropout=0.0` on reload, always.** Dropout matters during training (it injects noise into activations); during inference it is always disabled. The original training-time dropout is therefore not part of the checkpoint — `load_checkpoint` always reconstructs the model with `dropout=0.0`.
 - **The class is reconstructed, not pickled.** We store the *config* (five ints), not the `GPT` object itself. This is the correct way: a pickled object would be brittle to code changes (rename a class, the pickle breaks); a config dict survives any refactor that preserves the constructor signature.
+- **`.ckpt` is not the same as the `.pt` files of earlier chapters.** Ch.14's `trained_gpt.pt` was a bare `state_dict` (model weights only); Ch.17 saved `shakespeare_gpt.pt` and `shakespeare_tokenizer.json` separately. The `.ckpt` we produce here is a dict that bundles all three things — state_dict, tokenizer chars, and config. The two formats are *not* interchangeable: `model.load_state_dict(torch.load("X.ckpt"))` raises a `KeyError` because the loaded object is a dict-of-three-keys, not a state_dict.
 
 ---
 
@@ -246,7 +247,7 @@ def main() -> None:
 Three things to read off:
 
 - **`sub.add_parser("train", ...)` and `sub.add_parser("generate", ...)`** create *subcommands*. `mygpt train ...` hits `p_train`'s arguments; `mygpt generate ...` hits `p_gen`'s. Anything else gets a usage message.
-- **`set_defaults(func=...)`** is the standard argparse trick for dispatch: each subcommand attaches its handler function to `args`, and `main` just calls `args.func(args)` at the end. No `if/elif` chain to maintain.
+- **`set_defaults(func=...)`** is the idiomatic argparse pattern for subcommand dispatch: each subcommand attaches its handler function to `args`, and `main` just calls `args.func(args)` at the end. No `if/elif` chain to maintain.
 - **`required=True` on the subparsers** means `mygpt` with no subcommand prints help and exits. (This is the modern argparse default for dispatch; without it, omitting the subcommand silently does nothing.)
 
 The `[project.scripts]` table that `uv init mygpt --package` set up in `pyproject.toml` already contains `mygpt = "mygpt:main"`. So `uv run mygpt ...` calls the new `main()` we just wrote.

@@ -90,7 +90,9 @@ Two things to notice:
 - We allocate the mask **once**, when the module is constructed. Subsequent forward passes do `self.causal_mask[:T, :T]`, which is a view (zero allocation) into the existing buffer.
 - `register_buffer` takes a *string name* and a tensor. The tensor becomes accessible as `self.<name>` after registration — so the line `scores + self.causal_mask[:T, :T]` works.
 
-The `max_seq_len` is a hyperparameter of the module. Set it to the longest context length you intend to support; if you call the module on longer inputs it will index out of bounds. Real GPT models set this to 1024, 2048, or higher; for our running example we use 64 — comfortably more than the four tokens of `"I love AI !"`.
+The `max_seq_len` is a hyperparameter of the module. We will call this the **context window** throughout the rest of the tutorial; `max_seq_len` is the code-level identifier, "context window" is the prose name for the same thing. Set it to the longest sequence length you intend to support; if you call the module on longer inputs it will index out of bounds. Real GPT models set this to 1024, 2048, or higher; for our running example we use 64 — comfortably more than the four tokens of `"I love AI !"`.
+
+(Note: the *context window* is the architecture's maximum. The **trained context length** — the `seq_len` actually used during training — can be smaller, and §15.9 will show what happens if you generate past it.)
 
 ---
 
