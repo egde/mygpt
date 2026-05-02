@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: "myGPT — LLM Fundamentals & Advanced Topics: building a GPT-2-level language model from scratch"
+abstract: >-
+  A 28-chapter code-along tutorial that constructs a GPT-2-style language model
+  from scratch in PyTorch. Part I (Chapters 1–18, "LLM Fundamentals") covers
+  tokens, attention, the transformer block, training, generation, and a CLI.
+  Part II (Chapters 19–28, "Advanced Topics") covers device-aware training,
+  bf16 mixed precision, training-loop hardening, byte-pair encoding, RMSNorm,
+  RoPE, grouped-query attention, and a real ~500 MB Wikipedia training run.
+  Every line of code is introduced and explained.
+type: software
+authors:
+  - family-names: egde
+    email: degertsa@yahoo.com
+license: MIT
+repository-code: "https://github.com/egde/mygpt"
+url: "https://egde.github.io/mygpt/"
+keywords:
+  - gpt
+  - transformer
+  - language-model
+  - pytorch
+  - tutorial
+  - educational
+  - from-scratch
+  - rope
+  - gqa
+  - bpe
+year-released: 2026

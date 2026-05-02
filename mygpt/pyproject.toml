@@ -1,7 +1,7 @@
 [project]
 name = "mygpt"
-version = "0.1.0"
-description = "A tiny GPT-2-level language model built from scratch, the package the LLM Fundamentals tutorial constructs chapter by chapter."
+version = "0.28.0"
+description = "A tiny GPT-2-level language model built from scratch — the package the myGPT tutorial constructs across 28 chapters (LLM Fundamentals + Advanced Topics)."
 readme = "README.md"
 authors = [
     { name = "egde", email = "degertsa@yahoo.com" }
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mygpt = "mygpt:main"
+mygpt = "mygpt.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.8.0,<0.9"]

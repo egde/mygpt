@@ -4,10 +4,21 @@ description: A code-along book that builds a tiny GPT-2-level language model fro
 remote_theme: just-the-docs/just-the-docs
 plugins:
   - jekyll-remote-theme
+  - jekyll-sitemap
+  - jekyll-seo-tag
 
 color_scheme: light
 search_enabled: true
 heading_anchors: true
+enable_copy_code_button: true
+
+# "Edit this page on GitHub" link in chapter footers.
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_repository: "https://github.com/egde/mygpt"
+gh_edit_branch: "main"
+gh_edit_source: docs
+gh_edit_view_mode: "tree" 
 
 mermaid:
   version: "10.9.0"

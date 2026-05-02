@@ -1,6 +1,6 @@
-# mygpt — LLM Fundamentals
+# myGPT — LLM Fundamentals & Advanced Topics
 
-A 18-chapter code-along tutorial that builds **`mygpt`**, a tiny GPT-2-level character-level language model in PyTorch, from scratch.
+A 28-chapter code-along tutorial that builds **`mygpt`**, a tiny GPT-2-level language model in PyTorch, from scratch. Part I (Chapters 1–18) covers the fundamentals: tokens, attention, transformer blocks, training, and a CLI. Part II (Chapters 19–28) covers the modern recipe: bf16 mixed precision, cosine LR + warmup + clipping, BPE tokenisation, RMSNorm, RoPE, GQA, and a real ~500 MB Wikipedia training run.
 
 ## Two things in this repo
 
@@ -10,9 +10,9 @@ A 18-chapter code-along tutorial that builds **`mygpt`**, a tiny GPT-2-level cha
 └── mygpt/  →  the Python package the tutorial constructs, ready to install
 ```
 
-### [Read the tutorial →](https://egde.github.io/mygpt/)
+### [Read the tutorial on the published site →](https://egde.github.io/mygpt/)
 
-18 chapters, math-literate-but-ML-naive audience. Every line of code in the package is introduced and explained.
+28 chapters, math-literate-but-ML-naive audience, every line of code introduced and explained. The published site has LaTeX math, syntax highlighting, code-block copy buttons, and a chapter-by-chapter sidebar.
 
 ### Use the package
 
@@ -33,3 +33,7 @@ See `mygpt/README.md` for full CLI reference and the public API.
 ## Acknowledgements
 
 Architecture and training are patterned after Andrej Karpathy's [nanoGPT](https://github.com/karpathy/nanoGPT). `mygpt` is intentionally simpler — every file fits in one head.
+
+## Stuck on a chapter? Reset to a known-good state
+
+Each chapter has a corresponding `chapter_states/chNN/` snapshot — a complete, runnable `uv` package matching the end-state of that chapter. If your code stops working partway through, copy the snapshot for the *previous* chapter over your working tree and continue. See [`chapter_states/README.md`](chapter_states/README.md) for the full usage guide.

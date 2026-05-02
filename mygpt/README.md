@@ -1,6 +1,6 @@
 # mygpt
 
-A tiny GPT-2-level language model built from scratch in PyTorch. This is the package that the **[LLM Fundamentals](https://egde.github.io/mygpt/)** tutorial constructs chapter by chapter. Every line of code in `src/mygpt/__init__.py` is introduced and explained in one of the 18 tutorial chapters.
+A tiny GPT-2-level language model built from scratch in PyTorch. This is the package that the **[myGPT](https://egde.github.io/mygpt/)** tutorial constructs chapter by chapter — 18 chapters of LLM Fundamentals (Part I) plus 10 chapters of Advanced Topics (Part II) covering RoPE, GQA, RMSNorm, BPE, bf16 training, and a real Wikipedia run. Every line of code in this package is introduced and explained in one of the 28 tutorial chapters.
 
 ## Quick start
 
