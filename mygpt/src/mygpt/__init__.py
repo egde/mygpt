@@ -193,22 +193,31 @@ class MultiHeadAttention(nn.Module):
         max_seq_len: int = 64,
         dropout: float = 0.0,
         position_type: str = "learned",
+        num_kv_heads: int | None = None,
     ) -> None:
         super().__init__()
         if embed_dim % num_heads != 0:
             raise ValueError(
                 f"embed_dim ({embed_dim}) must be divisible by num_heads ({num_heads})"
             )
+        if num_kv_heads is None:
+            num_kv_heads = num_heads
+        if num_heads % num_kv_heads != 0:
+            raise ValueError(
+                f"num_heads ({num_heads}) must be divisible by num_kv_heads ({num_kv_heads})"
+            )
         self.embed_dim = embed_dim
         self.num_heads = num_heads
+        self.num_kv_heads = num_kv_heads
         self.head_dim = embed_dim // num_heads
+        self.kv_repeat = num_heads // num_kv_heads
         self.max_seq_len = max_seq_len
         self.dropout = dropout
         self.position_type = position_type
 
-        self.W_Q = nn.Linear(embed_dim, embed_dim, bias=False)
-        self.W_K = nn.Linear(embed_dim, embed_dim, bias=False)
-        self.W_V = nn.Linear(embed_dim, embed_dim, bias=False)
+        self.W_Q = nn.Linear(embed_dim, num_heads    * self.head_dim, bias=False)
+        self.W_K = nn.Linear(embed_dim, num_kv_heads * self.head_dim, bias=False)
+        self.W_V = nn.Linear(embed_dim, num_kv_heads * self.head_dim, bias=False)
         self.W_O = nn.Linear(embed_dim, embed_dim, bias=False)
 
         self.attn_drop = nn.Dropout(dropout)
@@ -236,13 +245,17 @@ class MultiHeadAttention(nn.Module):
         K = self.W_K(x)
         V = self.W_V(x)
 
-        Q = Q.view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
-        K = K.view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
-        V = V.view(B, T, self.num_heads, self.head_dim).transpose(1, 2)
+        Q = Q.view(B, T, self.num_heads,    self.head_dim).transpose(1, 2)
+        K = K.view(B, T, self.num_kv_heads, self.head_dim).transpose(1, 2)
+        V = V.view(B, T, self.num_kv_heads, self.head_dim).transpose(1, 2)
 
         if self.position_type == "rope":
             Q = apply_rope(Q, self.rope_cos, self.rope_sin)
             K = apply_rope(K, self.rope_cos, self.rope_sin)
+
+        if self.kv_repeat > 1:
+            K = K.repeat_interleave(self.kv_repeat, dim=1)
+            V = V.repeat_interleave(self.kv_repeat, dim=1)
 
         scores = Q @ K.transpose(-2, -1) / math.sqrt(self.head_dim)
         scores = scores + self.causal_mask[:T, :T]
@@ -323,15 +336,18 @@ class TransformerBlock(nn.Module):
         dropout=0.0,
         norm_type="layer",
         position_type="learned",
+        num_kv_heads=None,
     ):
         super().__init__()
         self.embed_dim = embed_dim
         self.num_heads = num_heads
+        self.num_kv_heads = num_kv_heads if num_kv_heads is not None else num_heads
         self.norm_type = norm_type
         self.position_type = position_type
         self.ln1 = _make_norm(embed_dim, norm_type)
         self.mha = MultiHeadAttention(
-            embed_dim, num_heads, max_seq_len, dropout, position_type=position_type
+            embed_dim, num_heads, max_seq_len, dropout,
+            position_type=position_type, num_kv_heads=self.num_kv_heads,
         )
         self.ln2 = _make_norm(embed_dim, norm_type)
         self.mlp = MLP(embed_dim, dropout)
@@ -347,11 +363,12 @@ class GPT(nn.Module):
 
     def __init__(self, vocab_size, embed_dim, num_heads, num_layers,
                  max_seq_len=64, dropout=0.0, norm_type="layer",
-                 position_type="learned"):
+                 position_type="learned", num_kv_heads=None):
         super().__init__()
         self.vocab_size = vocab_size
         self.embed_dim = embed_dim
         self.num_heads = num_heads
+        self.num_kv_heads = num_kv_heads if num_kv_heads is not None else num_heads
         self.num_layers = num_layers
         self.max_seq_len = max_seq_len
         self.norm_type = norm_type
@@ -365,7 +382,7 @@ class GPT(nn.Module):
         self.embed_drop = nn.Dropout(dropout)
         self.blocks = nn.Sequential(*[
             TransformerBlock(embed_dim, num_heads, max_seq_len, dropout,
-                             norm_type, position_type)
+                             norm_type, position_type, self.num_kv_heads)
             for _ in range(num_layers)
         ])
         self.ln_f = _make_norm(embed_dim, norm_type)
@@ -567,6 +584,7 @@ def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None
                 "vocab_size":     model.vocab_size,
                 "embed_dim":      model.embed_dim,
                 "num_heads":      model.num_heads,
+                "num_kv_heads":   getattr(model, "num_kv_heads", model.num_heads),
                 "num_layers":     model.num_layers,
                 "max_seq_len":    model.max_seq_len,
                 "norm_type":      getattr(model, "norm_type", "layer"),
@@ -582,8 +600,9 @@ def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
 
     Always loads to CPU; the caller is responsible for `.to(device)` afterwards.
     Pre-Ch.24 checkpoints have no `norm_type` field; pre-Ch.25 checkpoints have
-    no `position_type` field. Both default to their original behaviour
-    (``"layer"`` and ``"learned"``) so old `.ckpt` files continue to load.
+    no `position_type` field; pre-Ch.26 checkpoints have no `num_kv_heads` field.
+    All three default to their original behaviour (``"layer"``, ``"learned"``,
+    and ``num_kv_heads = num_heads``) so old `.ckpt` files continue to load.
     """
     ckpt = torch.load(path, map_location="cpu")
     config = ckpt["config"]
@@ -592,6 +611,7 @@ def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
         vocab_size=config["vocab_size"],
         embed_dim=config["embed_dim"],
         num_heads=config["num_heads"],
+        num_kv_heads=config.get("num_kv_heads", config["num_heads"]),
         num_layers=config["num_layers"],
         max_seq_len=config["max_seq_len"],
         dropout=0.0,
@@ -620,10 +640,12 @@ def _train_command(args) -> None:
         val_data = None
 
     set_seed(0)
+    num_kv_heads = args.num_kv_heads if args.num_kv_heads is not None else args.num_heads
     model = GPT(
         vocab_size=tokenizer.vocab_size,
         embed_dim=args.embed_dim,
         num_heads=args.num_heads,
+        num_kv_heads=num_kv_heads,
         num_layers=args.num_layers,
         max_seq_len=args.max_seq_len,
         dropout=args.dropout,
@@ -637,6 +659,8 @@ def _train_command(args) -> None:
     print(f"precision:    {args.precision}")
     print(f"norm:         {args.norm}")
     print(f"position:     {args.position}")
+    print(f"num_heads:    {args.num_heads}")
+    print(f"num_kv_heads: {num_kv_heads}")
     print(f"corpus chars: {len(text):,}")
     print(f"train chars:  {len(train_data):,}")
     if val_data is not None:
@@ -790,6 +814,12 @@ def main() -> None:
         choices=["learned", "rope"],
         default="learned",
         help="Position embedding: 'learned' (default; nn.Embedding, Ch.12) or 'rope' (rotary, Llama default).",
+    )
+    p_train.add_argument(
+        "--num-kv-heads",
+        type=int,
+        default=None,
+        help="Number of K/V heads for grouped-query attention. Default: same as --num-heads (full MHA, Ch.8). Must divide --num-heads.",
     )
     p_train.set_defaults(func=_train_command)
 
