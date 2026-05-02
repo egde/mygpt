@@ -39,4 +39,4 @@ Ten chapters that upgrade `mygpt` from a hand-rolled toy to a code base whose ar
 25. [RoPE: rotary position embeddings](25_rope.html)
 26. [GQA: grouped-query attention](26_gqa.html)
 27. [Modern recipe vs Ch.17 baseline](27_modern_recipe.html)
-28. Modern recipe at scale (Wikipedia) *(coming soon)*
+28. [Modern recipe at scale (Wikipedia)](28_wikipedia.html)
