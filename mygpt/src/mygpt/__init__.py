@@ -16,8 +16,27 @@ def to_ids(tokens: list[str]) -> torch.Tensor:
 
 
 def set_seed(seed: int = 0) -> None:
-    """Seed PyTorch's CPU random number generator."""
+    """Seed PyTorch's RNGs across whatever devices are available."""
     torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    if torch.backends.mps.is_available():
+        torch.mps.manual_seed(seed)
+
+
+def pick_device(arg: str = "auto") -> torch.device:
+    """Resolve a device spec to a torch.device.
+
+    ``"auto"`` prefers CUDA over MPS over CPU. The other strings
+    (``"cuda"``, ``"mps"``, ``"cpu"``) are passed through.
+    """
+    if arg == "auto":
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+    return torch.device(arg)
 
 
 def get_batch(
@@ -327,8 +346,11 @@ def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None
 
 
 def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
-    """Reload a (model, tokenizer) pair from a checkpoint produced by `save_checkpoint`."""
-    ckpt = torch.load(path)
+    """Reload a (model, tokenizer) pair from a checkpoint produced by `save_checkpoint`.
+
+    Always loads to CPU; the caller is responsible for `.to(device)` afterwards.
+    """
+    ckpt = torch.load(path, map_location="cpu")
     config = ckpt["config"]
     tokenizer = CharTokenizer(ckpt["tokenizer_chars"])
     model = GPT(
@@ -344,10 +366,12 @@ def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
 
 
 def _train_command(args) -> None:
+    device = pick_device(args.device)
+
     with open(args.text_file) as f:
         text = f.read()
     tokenizer = CharTokenizer.from_text(text)
-    data = tokenizer.encode(text)
+    data = tokenizer.encode(text).to(device)
 
     set_seed(0)
     model = GPT(
@@ -357,10 +381,11 @@ def _train_command(args) -> None:
         num_layers=args.num_layers,
         max_seq_len=args.max_seq_len,
         dropout=args.dropout,
-    )
+    ).to(device)
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
 
+    print(f"device:       {device}")
     print(f"corpus chars: {len(text):,}")
     print(f"vocab_size:   {tokenizer.vocab_size}")
     print(f"params:       {n_params:,}")
@@ -381,9 +406,12 @@ def _train_command(args) -> None:
 
 
 def _generate_command(args) -> None:
+    device = pick_device(args.device)
+    print(f"device: {device}\n")
     model, tokenizer = load_checkpoint(args.checkpoint)
+    model.to(device)
     set_seed(args.seed)
-    prompt = tokenizer.encode(args.prompt).unsqueeze(0)
+    prompt = tokenizer.encode(args.prompt).unsqueeze(0).to(device)
     out = generate(
         model,
         prompt,
@@ -416,6 +444,12 @@ def main() -> None:
     p_train.add_argument("--max-seq-len", type=int, default=64)
     p_train.add_argument("--dropout", type=float, default=0.0)
     p_train.add_argument("--print-every", type=int, default=500)
+    p_train.add_argument(
+        "--device",
+        choices=["auto", "cuda", "mps", "cpu"],
+        default="auto",
+        help="Compute device. 'auto' picks cuda → mps → cpu in that order.",
+    )
     p_train.set_defaults(func=_train_command)
 
     p_gen = sub.add_parser("generate", help="Generate text from a checkpoint.")
@@ -425,6 +459,12 @@ def main() -> None:
     p_gen.add_argument("--temperature", type=float, default=1.0)
     p_gen.add_argument("--top-k", type=int, default=10)
     p_gen.add_argument("--seed", type=int, default=0)
+    p_gen.add_argument(
+        "--device",
+        choices=["auto", "cuda", "mps", "cpu"],
+        default="auto",
+        help="Compute device. 'auto' picks cuda → mps → cpu in that order.",
+    )
     p_gen.set_defaults(func=_generate_command)
 
     args = parser.parse_args()
