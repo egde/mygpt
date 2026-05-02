@@ -80,3 +80,5 @@ Always run code from the project root. The package layout we choose makes that t
 ---
 
 Ready? Start with [Chapter 1: What is a language model?](01_what_is_a_language_model.html). When you finish Chapter 18, continue with [Part II — Advanced Topics](part_2_advanced.html).
+
+> **Stuck on a chapter?** Each chapter has a `chapter_states/chNN/` snapshot — a complete, runnable `uv` package matching its end-state. If you get lost partway through Ch.5 (say), `cp -r chapter_states/ch04/ <your-working-dir>` to start from a known-good state. See [`chapter_states/README.md`](https://github.com/egde/mygpt/tree/main/chapter_states) on GitHub.

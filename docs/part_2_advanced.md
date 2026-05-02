@@ -40,3 +40,7 @@ Ten chapters that upgrade `mygpt` from a hand-rolled toy to a code base whose ar
 26. [GQA: grouped-query attention](26_gqa.html)
 27. [Modern recipe vs Ch.17 baseline](27_modern_recipe.html)
 28. [Modern recipe at scale (Wikipedia)](28_wikipedia.html)
+
+---
+
+> **Stuck on a chapter?** Each chapter has a `chapter_states/chNN/` snapshot — a complete, runnable `uv` package matching its end-state. If you get lost partway through Ch.25 (say), `cp -r chapter_states/ch24/ <your-working-dir>` to start from a known-good state. See [`chapter_states/README.md`](https://github.com/egde/mygpt/tree/main/chapter_states) on GitHub.

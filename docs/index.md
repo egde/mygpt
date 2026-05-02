@@ -13,6 +13,8 @@ A code-along book that builds a tiny GPT-2-level language model from scratch in 
 
 The package itself lives at [github.com/egde/mygpt](https://github.com/egde/mygpt). Read the parts in order; Part II assumes Part I.
 
+> **Stuck on a chapter?** Each of the 28 chapters has a corresponding `chapter_states/chNN/` snapshot — a complete, runnable `uv` package matching the end-state of that chapter. If your code stops working partway through, copy the snapshot for the *previous* chapter over your working tree and continue. See [`chapter_states/README.md`](https://github.com/egde/mygpt/tree/main/chapter_states) on GitHub for the full usage guide.
+
 ---
 
 The running example throughout the book is the four tokens
