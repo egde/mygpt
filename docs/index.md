@@ -80,7 +80,7 @@ Always run code from the project root. The package layout we choose makes that t
 **Part V — A real workflow**
 
 16. [A reusable character tokenizer](16_character_tokenizer.md)
-17. Training on a real text file *(coming soon)*
+17. [Training on a real text file](17_training_on_real_text.md)
 18. Checkpoints, inference, and a CLI *(coming soon)*
 
 ---
