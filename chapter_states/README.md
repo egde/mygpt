@@ -19,7 +19,7 @@ end-state of Chapter `NN` in the tutorial. It contains exactly what your own
   Chapters 1–4 stay monolithic because the code is too small to be worth splitting.
 - `experiments/` — the cumulative set of experiment scripts the tutorial has
   asked you to save by that point (copied byte-for-byte from
-  `mygpt/experiments/`).
+  `experiments/`).
 
 ## When to use it
 
@@ -81,7 +81,7 @@ command from that chapter to fetch it.
 | `ch25` | Chapter 25 | RoPE: rotary position embeddings |
 | `ch26` | Chapter 26 | GQA: grouped-query attention |
 | `ch27` | Chapter 27 | Modern recipe vs Ch.17 baseline |
-| `ch28` | Chapter 28 | Modern recipe at scale (Wikipedia) — Part II finale |
+| `ch28` | Chapter 28 | Modern recipe at scale (Wikipedia) |
 
 ## How this directory is built
 
