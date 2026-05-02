@@ -90,7 +90,7 @@ Both runs use `--steps 2000` (the default) and the same fixed seed. The modern r
 uv run mygpt train tinyshakespeare.txt --device mps --output sh-baseline.ckpt
 ```
 
-Expected output (selected lines):
+**Expected output (selected lines):**
 
 ```text
 device:       mps
@@ -125,7 +125,7 @@ uv run mygpt train tinyshakespeare.txt --device mps \
     --output sh-modern.ckpt
 ```
 
-Expected output (selected lines, ± ~0.01 nats due to bf16 nondeterminism):
+**Expected output (selected lines, ± ~0.01 nats due to bf16 nondeterminism):**
 
 ```text
 device:       mps
@@ -193,7 +193,7 @@ Generate from each checkpoint at the same prompt with the same seed:
 uv run mygpt generate --checkpoint sh-baseline.ckpt --prompt "ROMEO:" --device cpu
 ```
 
-Expected output (last lines after `device: cpu`):
+**Expected output (last lines after `device: cpu`):**
 
 ```text
 ROMEO:
@@ -209,7 +209,7 @@ Whe a bros swencurenty hou
 uv run mygpt generate --checkpoint sh-modern.ckpt --prompt "ROMEO:" --device cpu
 ```
 
-Expected output (your text may differ slightly due to bf16-trained checkpoint nondeterminism, but should look qualitatively similar):
+**Expected output (your text may differ slightly due to bf16-trained checkpoint nondeterminism, but should look qualitatively similar):**
 
 ```text
 ROMEO:
@@ -257,3 +257,12 @@ You should find that RoPE moves the loss the most (~0.30 nats), cosine + warmup 
 ## 27.12 What's next
 
 Chapter 27 establishes that the modern recipe wins at toy scale: 0.34 nats of loss for 10% fewer parameters, on the same corpus. Chapter 28 — Part II's finale — turns the same recipe loose on a real corpus: a ~500 MB Wikipedia subset, a 10 M-parameter `mygpt`, BPE tokenizer (because at this point the vocab cost is repaid 1000× in shorter sequences), and a 1–3 hour training run on M1 MPS that produces a checkpoint capable of qualitatively coherent prose. That is the demonstration that "modern recipe + scale" is what real LLMs are actually doing — and that the same code we have been building can do it on a laptop.
+
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. Same corpus, same parameter budget, same step count: the modern recipe (RMSNorm + RoPE + GQA-2 + cosine + warmup + clipping + bf16) drops final loss from 2.0785 to ≈ 1.74 — a 0.34-nat / 16% gap on a 10% smaller model.
+> 2. RoPE alone earns ~0.30 of that 0.34 nats. The architectural changes that make the model *cheaper* (RMSNorm, GQA, bf16) are essentially free on quality at this scale; the architectural change that lets the model *see better* (RoPE) is what actually moves the loss.
+> 3. bf16 on M1 MPS at this scale is *slower* than fp32 in wall-clock time — small matmuls do not saturate the bf16 units. The bf16 payoff is at production scale (Ch.28), not toy scale.
+> 4. The 0.34-nat drop *looks* like 0.34 nats in the sample: the modern model produces sentences with structural cues (periods, line breaks, mixed punctuation) that the baseline lacks. Real-text quality is the Ch.28 payoff.
+
+On to [Chapter 28 — Modern recipe at scale (Wikipedia)](28_wikipedia.md).

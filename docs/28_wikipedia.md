@@ -14,6 +14,7 @@ By the end of this chapter you will have:
 
 - downloaded a ~520 MB Wikipedia corpus (the public `wikitext-103-raw-v1` train + valid + test splits, header-stripped, concatenated),
 - added a `--tokenizer {char,bpe}` flag to `mygpt train` so the BPE tokenizer (Ch.23) is finally wired into the trainer,
+- added a `--num-merges N` flag (default 1024) that controls the BPE vocabulary size,
 - learned why the Ch.23 BPE encoder takes hours on a 500 MB corpus and added a **fast-path** encoder + trainer that does the same job in seconds,
 - added a `--bpe-train-bytes N` flag that trains BPE on a representative slice of the corpus (default 0 = full corpus), which keeps the BPE setup time bounded even on huge corpora,
 - added a `--checkpoint-every N` flag with an atomic-write save so a Ctrl-C mid-run never corrupts the checkpoint,
@@ -26,7 +27,7 @@ This is the end of Part II. After this chapter, `mygpt` is a working modern smal
 
 ## 28.1 Setup
 
-This chapter assumes Chapter 27 — `mygpt/` has every flag from Ch.19–26 wired into the CLI. We will add three more here: `--tokenizer`, `--num-merges`, `--checkpoint-every`. Then we add a fast BPE training/encoding path inside `BPETokenizer` so the new flags are usable at corpus scale.
+This chapter assumes Chapter 27 — `mygpt/` has every flag from Ch.19–26 wired into the CLI. We will add four more here: `--tokenizer`, `--num-merges`, `--bpe-train-bytes`, `--checkpoint-every`. Then we add a fast BPE training/encoding path inside `BPETokenizer` so the new flags are usable at corpus scale.
 
 We need `tinyshakespeare.txt` only for one backward-compat smoke check at the end of §28.4. The new corpus arrives in §28.3.
 
@@ -40,13 +41,13 @@ You are ready.
 
 ---
 
-## 28.2 Three new CLI flags
+## 28.2 Four new CLI flags
 
 The trainer in `_train_command` has, since Ch.16, hardcoded `tokenizer = CharTokenizer.from_text(text)`. We replace that with a flag-driven branch so the same command can choose between Ch.16's char tokenizer and Ch.23's BPE tokenizer, which until now has lived in `mygpt` without ever being used by the CLI.
 
 We also add `--checkpoint-every N` with an *atomic* save: the bytes go to `path + ".tmp"` and `os.replace` atomically swaps them into place. A Ctrl-C mid-write leaves any prior checkpoint at `path` intact — important when a single training run takes hours.
 
-📄 `src/mygpt/checkpoint.py` — replace the existing `save_checkpoint` and `load_checkpoint` with these versions:
+**Replace `save_checkpoint` and `load_checkpoint` in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def save_checkpoint(
@@ -142,7 +143,7 @@ Two things to notice:
 
 Now thread the choice through `_train_command`. We will replace the relevant chunks of the function in §28.4 once the BPE fast path exists; for now, just add the three new arguments to the parser.
 
-📄 `src/mygpt/cli.py` — inside `main()`, just after the existing `--num-kv-heads` argument, append three more:
+**Append the following four arguments to `main()` in** 📄 `src/mygpt/cli.py` (after the existing `--num-kv-heads` argument):
 
 ```python
     p_train.add_argument(
@@ -198,7 +199,7 @@ The reader artefact for this chapter is a 520 MB plain-text corpus called `wikip
 
 We download via `urllib` from a pinned Smerity mirror so the script does not depend on the HuggingFace dataset API (which has been flaky in past Part-II runs).
 
-📄 `experiments/50_download_wikipedia.py`:
+**Save the following to** 📄 `experiments/50_download_wikipedia.py`:
 
 ```python
 """Download the wikitext-103-raw-v1 corpus to wikipedia.txt (Ch.28).
@@ -374,7 +375,7 @@ Chapter 23's `BPETokenizer` is *correct* on any corpus, but its `encode` is `O(n
 
 Run this measurement to see what we are up against:
 
-📄 `experiments/45_bpe_toy_speed.py`:
+**Save the following to** 📄 `experiments/45_bpe_toy_speed.py`:
 
 ```python
 """Benchmark the Ch.23 BPE encoder on a 1 MB Wikipedia slice (Ch.28)."""
@@ -418,7 +419,7 @@ Real BPE tokenizers (GPT-2's `tiktoken`, Llama's `tokenizers`) make two changes 
 
 Both changes are mechanical. We add them as two new methods on `BPETokenizer`: `from_corpus` (the fast trainer) and `encode_corpus` (the fast encoder). The Ch.23 `from_text` and `encode` stay where they are — they are short, readable, and exactly right when you are first learning the algorithm.
 
-📄 `src/mygpt/tokenizer.py` — replace the existing `BPETokenizer` class with this version:
+**Replace `BPETokenizer` in** 📄 `src/mygpt/tokenizer.py`:
 
 ```python
 class BPETokenizer:
@@ -701,7 +702,7 @@ That is **0.0021 %** of the corpus. We move on.
 
 ### Bench the fast path
 
-📄 `experiments/46_bpe_fast_speed.py`:
+**Save the following to** 📄 `experiments/46_bpe_fast_speed.py`:
 
 ```python
 """Benchmark the fast BPE training and encoding paths (Ch.28)."""
@@ -783,7 +784,7 @@ The new `tokenizer: char` line is the only diff vs Ch.27. The loss numbers are b
 
 The CLI flag exists; the trainer still hardcodes `CharTokenizer.from_text`. Replace the relevant chunk inside `_train_command` so it branches on `args.tokenizer`.
 
-📄 `src/mygpt/cli.py` — inside `_train_command`, replace the lines that read the text and build the tokenizer (the four lines starting `with open(args.text_file) as f:` through `data = tokenizer.encode(text).to(device)`) with this version:
+**Replace the text-reading + tokenizer block in `_train_command` in** 📄 `src/mygpt/cli.py` (the four lines starting `with open(args.text_file) as f:` through `data = tokenizer.encode(text).to(device)`):
 
 ```python
     with open(args.text_file) as f:
@@ -807,7 +808,7 @@ The `else` branch is byte-identical to the previous implementation, so `--tokeni
 
 We also want the `print(f"tokenizer: …")` line and the `--checkpoint-every` block to actually print. Both already exist in the version of `_train_command` that has been growing chapter by chapter; if your local file does not have them, add them now.
 
-📄 `src/mygpt/cli.py` — inside `_train_command`, the print block should already look like this; verify it does:
+**Verify the print block in `_train_command` in** 📄 `src/mygpt/cli.py`:
 
 ```python
     print(f"device:       {device}")
@@ -830,7 +831,7 @@ We also want the `print(f"tokenizer: …")` line and the `--checkpoint-every` bl
         print(f"checkpoint_every: {args.checkpoint_every}")
 ```
 
-📄 `src/mygpt/cli.py` — inside `_train_command`'s training loop (just before the final `save_checkpoint(...)` call at the bottom of the loop's body), the periodic-save block should look like this:
+**Add the periodic-save block to `_train_command` in** 📄 `src/mygpt/cli.py` (just before the final `save_checkpoint(...)` call at the bottom of the training loop):
 
 ```python
         if (
