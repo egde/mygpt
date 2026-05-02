@@ -1,0 +1,20 @@
+title: LLM Fundamentals
+description: A code-along tutorial that builds a GPT-2-level language model from scratch, in PyTorch, while explaining every concept along the way.
+
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+
+color_scheme: light
+search_enabled: true
+heading_anchors: true
+
+mermaid:
+  version: "10.9.0"
+
+# Files Jekyll should not publish.
+exclude:
+  - README.md
+  - vendor/
+  - Gemfile
+  - Gemfile.lock
