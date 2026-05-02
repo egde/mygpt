@@ -1,0 +1,18 @@
+# uv-managed virtual env and lockfile-derived state
+.venv/
+__pycache__/
+*.pyc
+.python-version
+
+# trained model artifacts (regenerate with `uv run mygpt train ...`)
+*.ckpt
+*.pt
+shakespeare_tokenizer.json
+
+# corpora (download with the curl command in README.md)
+tinyshakespeare.txt
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/

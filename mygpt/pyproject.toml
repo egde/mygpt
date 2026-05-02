@@ -1,0 +1,20 @@
+[project]
+name = "mygpt"
+version = "0.1.0"
+description = "A tiny GPT-2-level language model built from scratch, the package the LLM Fundamentals tutorial constructs chapter by chapter."
+readme = "README.md"
+authors = [
+    { name = "egde", email = "degertsa@yahoo.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.4.4",
+    "torch>=2.11.0",
+]
+
+[project.scripts]
+mygpt = "mygpt:main"
+
+[build-system]
+requires = ["uv_build>=0.8.0,<0.9"]
+build-backend = "uv_build"
