@@ -83,7 +83,7 @@ Three things:
 - **The other three strings are passed through verbatim** so the user can force a specific backend. Useful for benchmarking and for chapters in Part II that need a specific device for a specific point.
 - **No `try/except`** — if the user asks for `cuda` on a Mac, `torch.device("cuda")` succeeds (it just constructs a device object) but the *first operation* on a CUDA tensor will fail with a clear PyTorch error. We don't pre-empt the error with a friendlier message; the real one is fine.
 
-**Append the following helper to** 📄 `src/mygpt/__init__.py` (right after `set_seed`, which we will update next):
+**Append the following helper to** 📄 `src/mygpt/utils.py` (right after `set_seed`, which we will update next):
 
 ```python
 def pick_device(arg: str = "auto") -> torch.device:
@@ -115,7 +115,7 @@ def set_seed(seed: int = 0) -> None:
 
 Each device has its own RNG state. CUDA's lives on the GPU. MPS's lives on the Apple GPU. `torch.manual_seed` updates *only* the CPU one. To make `set_seed(0)` mean "make the run deterministic" regardless of device, we update all three.
 
-**Replace `set_seed` in** 📄 `src/mygpt/__init__.py`:
+**Replace `set_seed` in** 📄 `src/mygpt/utils.py`:
 
 ```python
 def set_seed(seed: int = 0) -> None:
@@ -135,7 +135,7 @@ Important: **seeding all three RNGs to the same number does NOT mean the three d
 
 Two edits to `_train_command` and `_generate_command`. Each takes a single new line at the top — `device = pick_device(args.device)` — and adds `.to(device)` after the model and the data are constructed.
 
-**Replace `_train_command` in** 📄 `src/mygpt/__init__.py`:
+**Replace `_train_command` in** 📄 `src/mygpt/cli.py`:
 
 ```python
 def _train_command(args) -> None:
@@ -180,7 +180,7 @@ def _train_command(args) -> None:
 
 Two changes from Chapter 18: `device = pick_device(args.device)` near the top, and three `.to(device)` calls (`tokenizer.encode(text).to(device)`, `model.to(device)`, and the print of `device:`).
 
-**Replace `_generate_command` in** 📄 `src/mygpt/__init__.py`:
+**Replace `_generate_command` in** 📄 `src/mygpt/cli.py`:
 
 ```python
 def _generate_command(args) -> None:
@@ -204,7 +204,7 @@ The leading `device: <name>` line is what the §19.8 exp 1 prose below relies on
 
 And one matching change inside `load_checkpoint` so checkpoints load cleanly on any device, regardless of where they were saved:
 
-**Replace the first line of `load_checkpoint`'s body in** 📄 `src/mygpt/__init__.py`:
+**Replace the first line of `load_checkpoint`'s body in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
@@ -391,9 +391,11 @@ Identical generated text to the MPS-checkpoint MPS-device run, because the model
 
 We can train and generate on three devices. The next chapter, **Chapter 20 — Mixed precision (bf16)**, adds a `--precision` flag that uses 16-bit floats inside the forward pass. On CUDA this is a free 1.5–2× speedup on top of MPS-vs-CPU; on MPS it is supported with caveats; on CPU it is pointless. Everything else in Part II will start with `--device <something> --precision <something>` baked in.
 
-Looking ahead — what to remember from this chapter:
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. `pick_device("auto")` resolves to CUDA > MPS > CPU. The string forms (`"cuda"`, `"mps"`, `"cpu"`) force a specific backend.
+> 2. `set_seed` now seeds CPU, CUDA, and MPS RNGs together — but seeding three RNGs to the same number does *not* make them produce the same values.
+> 3. Same model + different device → the loss values are typically identical (deterministic matmul) but the *generated samples* diverge (per-device RNG).
+> 4. Checkpoints are device-portable: `load_checkpoint` always lands on CPU, and the caller does `.to(device)`.
 
-1. `pick_device("auto")` resolves to CUDA > MPS > CPU. The string forms (`"cuda"`, `"mps"`, `"cpu"`) force a specific backend.
-2. `set_seed` now seeds CPU, CUDA, and MPS RNGs together — but seeding three RNGs to the same number does *not* make them produce the same values.
-3. Same model + different device → the loss values are typically identical (deterministic matmul) but the *generated samples* diverge (per-device RNG).
-4. Checkpoints are device-portable: `load_checkpoint` always lands on CPU, and the caller does `.to(device)`.
+On to [Chapter 20 — Mixed precision training (bf16)](20_mixed_precision.md).

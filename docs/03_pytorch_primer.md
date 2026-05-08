@@ -591,4 +591,4 @@ In Chapter 4 we use all three to teach a *single number* — yes, a number — t
 > 4. `nn.Module` is the class; `nn.Parameter` is the flag that tells it which tensors are learnable.
 > 5. Token ids enter PyTorch as a `dtype=torch.long` tensor — `mygpt.to_ids` produces exactly that.
 
-On to [Chapter 4 — How machines learn: loss, gradients, gradient descent](04_how_machines_learn.md) *(coming soon)*.
+On to [Chapter 4 — How machines learn: loss, gradients, gradient descent](04_how_machines_learn.md).

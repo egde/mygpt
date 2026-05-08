@@ -99,7 +99,7 @@ K = torch.tensor([[1., 1., 1., 1.],
 print(K.repeat_interleave(2, dim=0))      # repeat along the heads axis, 2 copies each
 ```
 
-Expected output:
+**Expected output:**
 
 ```text
 tensor([[1., 1., 1., 1.],
@@ -118,7 +118,7 @@ Press `Ctrl-D` to exit the REPL.
 
 The change in `MultiHeadAttention` is small: a new constructor parameter, a new validation check, a new instance attribute, narrower $W_K$ and $W_V$, a different reshape for K and V, and a `repeat_interleave` before the dot-product. Everything else stays identical to Ch.25.
 
-📄 `src/mygpt/__init__.py` — replace the existing `MultiHeadAttention` class with this version:
+**Replace `MultiHeadAttention` in** 📄 `src/mygpt/attention.py`:
 
 ```python
 class MultiHeadAttention(nn.Module):
@@ -211,7 +211,7 @@ Three things to notice:
 
 Now thread `num_kv_heads` through the two callers above `MultiHeadAttention`.
 
-📄 `src/mygpt/__init__.py` — replace the existing `TransformerBlock` class with this version:
+**Replace `TransformerBlock` in** 📄 `src/mygpt/block.py`:
 
 ```python
 class TransformerBlock(nn.Module):
@@ -245,7 +245,7 @@ class TransformerBlock(nn.Module):
         return x
 ```
 
-📄 `src/mygpt/__init__.py` — replace the existing `GPT.__init__` (the `forward` is unchanged) with this version. The simplest way is to replace the whole class definition; copy the `forward` from Ch.25 unchanged:
+**Replace `GPT` in** 📄 `src/mygpt/model.py` (the simplest way is to replace the whole class definition; copy the `forward` from Ch.25 unchanged, since only `__init__` changes):
 
 ```python
 class GPT(nn.Module):
@@ -303,7 +303,7 @@ The ladder is the same as Ch.24 and Ch.25: a new optional argument with a defaul
 
 Persist the choice. Pre-Ch.26 checkpoints fall back to the Part-I default (`num_kv_heads = num_heads`).
 
-📄 `src/mygpt/__init__.py` — replace the existing `save_checkpoint` and `load_checkpoint` with these versions:
+**Replace `save_checkpoint` and `load_checkpoint` in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None:
@@ -360,7 +360,7 @@ def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
 
 Add the flag, print it, and pass it through.
 
-📄 `src/mygpt/__init__.py` — inside `_train_command`, replace the `model = GPT(...)` block with this version (it inserts a `num_kv_heads` resolution step and threads it through):
+**Inside `_train_command` in** 📄 `src/mygpt/cli.py`, **replace the `model = GPT(...)` block** with this version (it inserts a `num_kv_heads` resolution step and threads it through):
 
 ```python
     set_seed(0)
@@ -378,7 +378,7 @@ Add the flag, print it, and pass it through.
     ).to(device)
 ```
 
-📄 `src/mygpt/__init__.py` — inside `_train_command`, replace the two `print(...)` lines for `norm:` and `position:` with these four:
+**Inside `_train_command` in** 📄 `src/mygpt/cli.py`, **replace the two `print(...)` lines for `norm:` and `position:`** with these four:
 
 ```python
     print(f"norm:         {args.norm}")
@@ -387,7 +387,7 @@ Add the flag, print it, and pass it through.
     print(f"num_kv_heads: {num_kv_heads}")
 ```
 
-📄 `src/mygpt/__init__.py` — inside `main()`, just after the `--position` argument is added, append the new flag:
+**Inside `main()` in** 📄 `src/mygpt/cli.py`, **just after the `--position` argument is added, append the new flag**:
 
 ```python
     p_train.add_argument(
@@ -404,7 +404,7 @@ Verify the CLI parses:
 uv run mygpt train --help | tail -5
 ```
 
-Expected output (last few lines):
+**Expected output (last few lines):**
 
 ```text
   --num-kv-heads NUM_KV_HEADS
@@ -423,7 +423,7 @@ Train with the defaults — same command as Ch.25's §25.8 backward-compat run. 
 uv run mygpt train tinyshakespeare.txt --device mps --output sh-mha.ckpt
 ```
 
-Expected output:
+**Expected output:**
 
 ```text
 device:       mps
@@ -460,7 +460,7 @@ Now train with two K/V heads instead of four:
 uv run mygpt train tinyshakespeare.txt --device mps --num-kv-heads 2 --output sh-gqa.ckpt
 ```
 
-Expected output (selected lines):
+**Expected output (selected lines):**
 
 ```text
 norm:         layer
@@ -513,7 +513,7 @@ We do not implement KV caching in `mygpt` — caching is an inference-engineerin
 uv run mygpt generate --checkpoint sh-mha.ckpt --prompt "ROMEO:" --device cpu
 ```
 
-Expected output (last lines after the device line):
+**Expected output (last lines after the device line):**
 
 ```text
 ROMEO:
@@ -531,7 +531,7 @@ This is the byte-exact Ch.17 §17.6 sample — every prior backward-compat check
 uv run mygpt generate --checkpoint sh-gqa.ckpt --prompt "ROMEO:" --device cpu
 ```
 
-Expected output:
+**Expected output:**
 
 ```text
 ROMEO:
@@ -592,3 +592,12 @@ This is the validation in `__init__.py`. Without it, `kv_repeat = 4 // 3 = 1` an
 ## 26.14 What's next
 
 `mygpt` now has every architectural piece of a modern open-weight LLM at toy scale: BPE tokenizer (Ch.23), RMSNorm (Ch.24), RoPE (Ch.25), and GQA (Ch.26). Chapter 27 stops adding flags and starts measuring: same parameter budget as Ch.17, modern recipe vs. baseline recipe, side by side, on the same Tiny Shakespeare corpus. The "aha" of Part II is that the modern stack — with no scale change — measurably beats the baseline.
+
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. GQA is parameterised by `num_kv_heads`. Each KV head is shared across `G = num_heads / num_kv_heads` query heads, repeated by `K.repeat_interleave(G, dim=1)` before the dot product. Full MHA (`num_kv_heads = num_heads`, `G = 1`) and MQA (`num_kv_heads = 1`) are the endpoints of the same dial.
+> 2. At our toy scale GQA-2 saves 16,384 parameters (8% of the 207,296-parameter total) — exactly `4 layers × 2 (W_K + W_V) × (4096 − 2048)`. Step-2000 loss moves by 0.007 nats; the savings are essentially free.
+> 3. The default code path (`num_kv_heads = num_heads`) skips `repeat_interleave` and is bit-identical to Ch.25. Backward compat for every Ch.18–25 checkpoint holds — the new `num_kv_heads` field defaults to `num_heads` on load.
+> 4. The headline payoff is at inference time, not training: the KV cache scales with `num_kv_heads × head_dim × T_total`, so halving `num_kv_heads` halves the cache. At Llama-2 70B scale that is the difference between fitting an 8K-token conversation in 32 GB of VRAM and not.
+
+On to [Chapter 27 — Modern recipe vs Ch.17 baseline](27_modern_recipe.md).

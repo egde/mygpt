@@ -278,6 +278,8 @@ Time to put the embedding into the package. We wrap `nn.Embedding` in a `mygpt.T
 - it gives us a stable name in the `mygpt` API (later chapters will refer to `mygpt.TokenEmbedding`, never `nn.Embedding` directly), and
 - it lets us add behaviour later without breaking callers — for example, sharing weights with the language-modelling head in Chapter 12.
 
+A small layout note before we add code: from this chapter on, each new piece of the model lives in its own file under `src/mygpt/` (e.g. `embedding.py` here, then `attention.py`, `mlp.py`, …) and `__init__.py` becomes a thin re-export shim so `from mygpt import TokenEmbedding` keeps working. For brevity each chapter shows the cumulative state as one block; the `chapter_states/chNN/src/mygpt/` snapshot is the canonical multi-file layout.
+
 **Replace the contents of** 📄 `src/mygpt/__init__.py` **with:**
 
 ```python
@@ -489,4 +491,4 @@ In Chapter 6 we build single-head self-attention from scratch — by hand, on th
 > 3. Token ids enter the model as `(B, T)`; embedded vectors come out as `(B, T, C)`.
 > 4. `mygpt.TokenEmbedding` is our wrapper around `nn.Embedding`; later chapters refer to it, never `nn.Embedding` directly.
 
-On to [Chapter 6 — Single-head self-attention from scratch](06_self_attention.md) *(coming soon)*.
+On to [Chapter 6 — Single-head self-attention from scratch](06_self_attention.md).

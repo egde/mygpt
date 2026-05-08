@@ -73,7 +73,9 @@ You are ready.
 
 The class is short. Most of the surface area is in the three sub-modules; the block itself just holds them and runs them in order.
 
-**Append the following class to** 📄 `src/mygpt/__init__.py` (after `LayerNorm`, before `main`):
+`TransformerBlock` lives in its own module file (`src/mygpt/block.py`) — keeping each piece of the model in a dedicated file scales better than one growing `__init__.py`.
+
+**Append the following class to** 📄 `src/mygpt/block.py`:
 
 ```python
 class TransformerBlock(nn.Module):
@@ -315,4 +317,4 @@ With those two pieces in place, Chapter 13 will write the forward pass that comp
 > 3. The block preserves shape `(B, T, C) → (B, T, C)`, so stacking is `nn.Sequential` over $N$ blocks.
 > 4. `mygpt.TransformerBlock(C=4, num_heads=2)` has 228 parameters; GPT-2 small's block has ≈ 7.08 M.
 
-On to [Chapter 12 — Position embeddings and the language modeling head](12_positions_and_head.md) *(coming soon)*.
+On to [Chapter 12 — Position embeddings and the language modeling head](12_positions_and_head.md).

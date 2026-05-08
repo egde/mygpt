@@ -501,4 +501,4 @@ In Chapter 5 we build the bridge from the integer ids `mygpt.to_ids` produces to
 > 3. The learning rate is the most important hyperparameter you choose by hand — too small and learning is slow, too large and it diverges.
 > 4. `mygpt.set_seed(0)` is how every later chapter starts a deterministic run.
 
-On to [Chapter 5 — From text to numbers: tokens and embeddings](05_tokens_and_embeddings.md) *(coming soon)*.
+On to [Chapter 5 — From text to numbers: tokens and embeddings](05_tokens_and_embeddings.md).

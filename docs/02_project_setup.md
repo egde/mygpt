@@ -371,4 +371,4 @@ In Chapter 3 we add PyTorch. We learn what a **tensor** is, how PyTorch automati
 > 4. The package source lives in `src/mygpt/`. Experiments live in `experiments/` and import from the package.
 > 5. Editing files under `src/mygpt/` requires no re-install — editable mode already pointed the venv at the source.
 
-On to [Chapter 3 — PyTorch in 20 minutes](03_pytorch_primer.md) *(coming soon)*.
+On to [Chapter 3 — PyTorch in 20 minutes](03_pytorch_primer.md).

@@ -52,17 +52,17 @@ Beyond that one change, the algorithm is identical to Ch.22's: count adjacent pa
 
 We need a top-level `import collections` (the algorithm uses `collections.Counter`). Add it next to the existing `import math`:
 
-**At the top of** 📄 `src/mygpt/__init__.py`, **add**:
+**At the top of** 📄 `src/mygpt/tokenizer.py`, **add**:
 
 ```python
 import collections
 ```
 
-(Place it before `import math`.)
+(Place it next to the existing imports at the top of the file.)
 
 Then the class itself. It follows the same five-method shape as `CharTokenizer` from Ch.16: `__init__`, `from_text`, `encode`, `decode`, `save`, `load`. The serialised state is two JSON-friendly objects: `chars` (the alphabet — sorted unique characters of the training text) and `merges` (an ordered list of `(a, b)` string-pair merge rules).
 
-**Append the following class to** 📄 `src/mygpt/__init__.py` (after `CharTokenizer`, before `save_checkpoint`):
+**Append the following class to** 📄 `src/mygpt/tokenizer.py` (after `CharTokenizer`, before `save_checkpoint`):
 
 ```python
 class BPETokenizer:
@@ -438,9 +438,11 @@ After each experiment, restore any file you changed before moving on.
 
 The next chapter, **Chapter 24 — RMSNorm replaces LayerNorm**, leaves tokenization behind and starts modernising the *architecture*. RMSNorm is what Llama and Mistral use; Chapter 11's `LayerNorm` will get a sibling class, and a `--norm {rms, layer}` flag will let the student pick at training time.
 
-Looking ahead — what to remember from this chapter:
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. `BPETokenizer` is shape-compatible with `CharTokenizer`: `from_text`, `encode`, `decode`, `save`, `load`. The model code doesn't care which one feeds it ids.
+> 2. Training BPE is slow (~70 s on Tiny Shakespeare with 512 merges) but you only do it *once per corpus* and ship the JSON file alongside the checkpoint.
+> 3. The vocabulary is `chars + merges-in-creation-order`; decoding is `"".join(vocab[i] for i in ids)`.
+> 4. Compression on Tiny Shakespeare: **~2.3× shorter sequences** at 512 merges, ~2.7× at 1024 merges, ~4× at GPT-2 scale (50,257 tokens). Fewer tokens ≈ proportionally faster generation.
 
-1. `BPETokenizer` is shape-compatible with `CharTokenizer`: `from_text`, `encode`, `decode`, `save`, `load`. The model code doesn't care which one feeds it ids.
-2. Training BPE is slow (~70 s on Tiny Shakespeare with 512 merges) but you only do it *once per corpus* and ship the JSON file alongside the checkpoint.
-3. The vocabulary is `chars + merges-in-creation-order`; decoding is `"".join(vocab[i] for i in ids)`.
-4. Compression on Tiny Shakespeare: **~2.3× shorter sequences** at 512 merges, ~2.7× at 1024 merges, ~4× at GPT-2 scale (50,257 tokens). Fewer tokens ≈ proportionally faster generation.
+On to [Chapter 24 — RMSNorm replaces LayerNorm](24_rmsnorm.md).

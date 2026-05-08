@@ -79,7 +79,9 @@ We bundle three things into a single Python dict and let `torch.save` serialise 
 
 `torch.save` happily serialises a dict whose values are tensors, lists, and ints. On reload, `torch.load` returns the same dict, from which we re-build the tokenizer (`CharTokenizer(chars)`) and the model (`GPT(**config)` plus `load_state_dict`).
 
-**Append the following two functions to** 📄 `src/mygpt/__init__.py` (after `CharTokenizer`, before `main`):
+Checkpointing is its own concern — independent of the model architecture and the tokenizer — so it gets its own module file (`src/mygpt/checkpoint.py`).
+
+**Append the following two functions to** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None:
@@ -131,7 +133,9 @@ The training loop is the same one we used in §17.5: build a tokenizer from the 
 
 The function signature is `_train_command(args) -> None` — it takes the parsed CLI arguments and returns nothing. Naming it with a leading `_` signals "internal helper, not for direct use" — students should call `mygpt train ...` from the shell, not `mygpt._train_command(...)` from Python.
 
-**Append the following function to** 📄 `src/mygpt/__init__.py` (after `load_checkpoint`, before `main`):
+The CLI handlers and dispatcher all live in their own module file (`src/mygpt/cli.py`) — argument parsing is its own concern and shouldn't sit next to the model.
+
+**Append the following function to** 📄 `src/mygpt/cli.py` (before the existing `main`):
 
 ```python
 def _train_command(args) -> None:
@@ -179,7 +183,7 @@ The two `set_seed(...)` calls match what §17.5's experiment did: seed `0` for m
 
 Symmetric, simpler: load a checkpoint, encode the prompt, call `generate`, decode, print.
 
-**Append the following function to** 📄 `src/mygpt/__init__.py` (after `_train_command`, before `main`):
+**Append the following function to** 📄 `src/mygpt/cli.py` (after `_train_command`, before `main`):
 
 ```python
 def _generate_command(args) -> None:
@@ -204,7 +208,7 @@ def _generate_command(args) -> None:
 
 `main()` until now has been a one-line hello-world that printed the four-token vocabulary. We *replace* it with an argparse-based dispatcher that recognises two subcommands and routes them to the helpers we just wrote.
 
-**Replace the existing `main()` in** 📄 `src/mygpt/__init__.py` **with**:
+**Replace the existing `main()` in** 📄 `src/mygpt/cli.py` **with**:
 
 ```python
 def main() -> None:
@@ -250,7 +254,14 @@ Three things to read off:
 - **`set_defaults(func=...)`** is the idiomatic argparse pattern for subcommand dispatch: each subcommand attaches its handler function to `args`, and `main` just calls `args.func(args)` at the end. No `if/elif` chain to maintain.
 - **`required=True` on the subparsers** means `mygpt` with no subcommand prints help and exits. (This is the modern argparse default for dispatch; without it, omitting the subcommand silently does nothing.)
 
-The `[project.scripts]` table that `uv init mygpt --package` set up in `pyproject.toml` already contains `mygpt = "mygpt:main"`. So `uv run mygpt ...` calls the new `main()` we just wrote.
+The `[project.scripts]` table that `uv init mygpt --package` set up in `pyproject.toml` originally read `mygpt = "mygpt:main"` — pointing at `main()` inside the package's top-level `__init__.py`. Now that `main()` lives in `src/mygpt/cli.py`, update the entry-point dotted path so `uv` looks in the right module. Edit `pyproject.toml`:
+
+```toml
+[project.scripts]
+mygpt = "mygpt.cli:main"
+```
+
+So `uv run mygpt ...` calls the new `main()` we just wrote.
 
 `uv` will reinstall the package automatically the next time you run it (`uv` syncs the editable install on demand). No `uv sync` step needed.
 

@@ -483,4 +483,4 @@ In Chapter 10 we add **layer normalisation**, the third and final piece of the t
 > 3. Parameter count is $4 C^2$ regardless of $h$: $h$ heads of size $d_h = C/h$ have the same total weights as one head of size $C$.
 > 4. `MultiHeadAttention(C, 1)` and `SingleHeadAttention(C, C)` produce byte-for-byte identical output — the new module is a strict generalisation.
 
-On to [Chapter 9 — The feed-forward network and residual connections](09_mlp_and_residuals.md) *(coming soon)*.
+On to [Chapter 9 — The feed-forward network and residual connections](09_mlp_and_residuals.md).

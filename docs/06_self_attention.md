@@ -697,4 +697,4 @@ Chapter 7 turns the inline self-attention computation into a small, reusable mod
 > 4. The $\sqrt{d_h}$ scale factor prevents softmax saturation as $d_h$ grows; without it, large-$d_h$ models cannot learn good attention patterns.
 > 5. `mygpt.SingleHeadAttention(C, d_h)` has $4 \cdot C \cdot d_h$ parameters — one $C \times d_h$ matrix each for $Q, K, V$ and one $d_h \times C$ for the output projection.
 
-On to [Chapter 7 — A reusable attention module](07_reusable_attention.md) *(coming soon)*.
+On to [Chapter 7 — A reusable attention module](07_reusable_attention.md).

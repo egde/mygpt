@@ -553,4 +553,4 @@ In Chapter 8 we generalise to **multi-head attention**: instead of one head with
 > 3. The refactored `SingleHeadAttention` adds `max_seq_len` and `dropout` arguments; with `dropout=0` it produces output byte-for-byte identical to the Chapter 6 version.
 > 4. The total parameter count is unchanged. Buffers and dropout layers are not parameters.
 
-On to [Chapter 8 — Multi-head attention](08_multi_head_attention.md) *(coming soon)*.
+On to [Chapter 8 — Multi-head attention](08_multi_head_attention.md).

@@ -15,7 +15,7 @@ By the end of this chapter you will have:
 - added a `--position {learned, rope}` CLI flag (default `learned` so prior chapters bit-reproduce),
 - watched RoPE *replace* the learned position embedding entirely (the model is **4,096 parameters smaller** at our toy scale — exactly the size of the dropped `nn.Embedding(64, 64)`),
 - seen RoPE produce a **lower training loss** than learned positions on the same corpus (1.7812 vs 2.0785 at step 2000) — the inductive bias is helping more than the lost parameters hurt at this scale,
-- understood the killer property — RoPE works at *any* position index, so generation past trained `seq_len` no longer collapses (the §15.9 failure mode is gone).
+- understood the structural property — RoPE works at *any* position index, so generation past trained `seq_len` no longer collapses (the §15.9 failure mode is gone).
 
 Backward compat is preserved: pre-Ch.25 checkpoints have no `position_type` field and default to `"learned"` on load.
 
@@ -86,7 +86,7 @@ The reason this measures *relative* position: when you compute the attention dot
 
 We need a precomputed `(cos, sin)` lookup keyed by position, and a function that applies it to a tensor of shape `(..., T, d_h)`.
 
-**Append the following two helpers to** 📄 `src/mygpt/__init__.py` (right before `class MultiHeadAttention`):
+**Append the following two helpers to** 📄 `src/mygpt/attention.py` (right before `class MultiHeadAttention`):
 
 ```python
 def precompute_rope_cache(
@@ -140,7 +140,7 @@ The cache holds `cos` and `sin` tables — one row per position, one column per 
 
 Three changes, each small. `MultiHeadAttention` gets a `position_type` parameter and, when it is `"rope"`, registers a precomputed cache and applies it inside `forward`. `TransformerBlock` and `GPT` just pass the parameter through.
 
-**Replace `MultiHeadAttention` in** 📄 `src/mygpt/__init__.py`:
+**Replace `MultiHeadAttention` in** 📄 `src/mygpt/attention.py`:
 
 ```python
 class MultiHeadAttention(nn.Module):
@@ -214,7 +214,7 @@ class MultiHeadAttention(nn.Module):
 
 Three changes from Ch.24's version: a new `position_type` parameter; a conditional `register_buffer("rope_cos"/"rope_sin", ...)` in `__init__`; and a conditional `apply_rope` block inside `forward`, between the head-split and the score computation.
 
-**Replace `TransformerBlock` in** 📄 `src/mygpt/__init__.py`:
+**Replace `TransformerBlock` in** 📄 `src/mygpt/block.py`:
 
 ```python
 class TransformerBlock(nn.Module):
@@ -247,7 +247,7 @@ class TransformerBlock(nn.Module):
 
 (One new constructor parameter, passed through to `MultiHeadAttention`. Forward unchanged.)
 
-**Replace `GPT` in** 📄 `src/mygpt/__init__.py`:
+**Replace `GPT` in** 📄 `src/mygpt/model.py`:
 
 ```python
 class GPT(nn.Module):
@@ -309,7 +309,7 @@ When `position_type="rope"`, the `nn.Embedding(max_seq_len, embed_dim)` is **not
 
 Same backward-compat dance as Ch.24. Add `position_type` to the saved config; default `"learned"` on load so pre-Ch.25 checkpoints continue to work.
 
-**Replace `save_checkpoint` in** 📄 `src/mygpt/__init__.py`:
+**Replace `save_checkpoint` in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None:
@@ -332,7 +332,7 @@ def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None
     )
 ```
 
-**Replace `load_checkpoint` in** 📄 `src/mygpt/__init__.py`:
+**Replace `load_checkpoint` in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
@@ -477,7 +477,7 @@ Three things to read off:
 
 ---
 
-## 25.10 The killer property: position-extrapolation by construction
+## 25.10 The structural property: position-extrapolation by construction
 
 Recall §15.9: a model trained with `seq_len=8` and a learned position embedding produced sensible tokens for positions 0–7 and started drifting at position 8 onward. That drift was *forced* — positions 8 through `max_seq_len-1` had position-embedding rows at random initialisation that the gradients had never touched.
 
@@ -569,9 +569,11 @@ After each experiment, restore any file you changed before moving on.
 
 The next chapter, **Chapter 26 — GQA: grouped-query attention**, makes one more architectural change before we run the modern recipe end-to-end. GQA shares each $K$ and $V$ head across multiple $Q$ heads — a memory-saving trick that becomes essential at GPT-2 scale and beyond, where the KV cache during generation dominates the per-step inference cost.
 
-Looking ahead — what to remember from this chapter:
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. RoPE encodes position as a rotation of `(q_{2i}, q_{2i+1})` pairs and `(k_{2i}, k_{2i+1})` pairs by angles `θ_i · pos`. No learned position parameters.
+> 2. The frequency ladder `θ_i = base^{-2i/d_h}` covers many timescales: the first pair rotates ~1 radian per position, the last barely rotates at all.
+> 3. Position information is injected at *every* attention layer (not just at input), and the dot-product structure makes attention naturally measure *relative* position.
+> 4. Backward-compat: `--position learned` (default) reproduces every prior chapter's run; `--position rope` opts into the new behaviour. Pre-Ch.25 checkpoints default to `"learned"` on load.
 
-1. RoPE encodes position as a rotation of `(q_{2i}, q_{2i+1})` pairs and `(k_{2i}, k_{2i+1})` pairs by angles `θ_i · pos`. No learned position parameters.
-2. The frequency ladder `θ_i = base^{-2i/d_h}` covers many timescales: the first pair rotates ~1 radian per position, the last barely rotates at all.
-3. Position information is injected at *every* attention layer (not just at input), and the dot-product structure makes attention naturally measure *relative* position.
-4. Backward-compat: `--position learned` (default) reproduces every prior chapter's run; `--position rope` opts into the new behaviour. Pre-Ch.25 checkpoints default to `"learned"` on load.
+On to [Chapter 26 — GQA: grouped-query attention](26_gqa.md).

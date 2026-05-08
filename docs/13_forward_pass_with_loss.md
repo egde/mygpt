@@ -214,7 +214,7 @@ def forward(self, ids: torch.Tensor, targets: torch.Tensor | None = None) -> tup
     return logits, loss
 ```
 
-(You also need to add `import math` at the top of `__init__.py` if it's not already there — it is, from Chapter 6.)
+(The new `forward` uses `F.cross_entropy`, so add `import torch.nn.functional as F` to the top of `model.py` if it isn't there yet.)
 
 Then update `main` to demonstrate the (input, targets) → (logits, loss) flow:
 
@@ -329,4 +329,4 @@ After Chapter 14 we have a *trained* `mygpt.GPT` — and Chapter 15 will sample 
 > 3. The next-token shift: input is `tokens[:-1]`, targets are `tokens[1:]`. Position $t$ predicts position $t+1$.
 > 4. `mygpt.GPT.forward(ids, targets=None)` returns `(logits, loss)` where `loss` is `None` for inference and a scalar for training.
 
-On to [Chapter 14 — Training loop: gradient descent in practice](14_training_loop.md) *(coming soon)*.
+On to [Chapter 14 — Training loop: gradient descent in practice](14_training_loop.md).

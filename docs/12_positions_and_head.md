@@ -194,9 +194,9 @@ logits = x @ self.token_embedding.embedding.weight.T  # (B, T, V)
 
 ## 12.6 Building `mygpt.GPT`
 
-Time to assemble the full model.
+Time to assemble the full model. `GPT` is the top-level class that ties everything together, so it gets its own module file (`src/mygpt/model.py`).
 
-**Append the following class to** 📄 `src/mygpt/__init__.py` (after `TransformerBlock`, before `main`):
+**Append the following class to** 📄 `src/mygpt/model.py`:
 
 ```python
 class GPT(nn.Module):
@@ -364,4 +364,4 @@ We have a complete model. `mygpt.GPT(vocab_size=4, embed_dim=4, num_heads=2, num
 > 3. A final `LayerNorm` runs before the head to renormalise the residual stream.
 > 4. `mygpt.GPT(V=4, C=4, h=2, N=2, max_seq_len=64)` has 736 parameters and outputs logits of shape `(B, T, V)`.
 
-On to [Chapter 13 — The forward pass with loss](13_forward_pass_with_loss.md) *(coming soon)*.
+On to [Chapter 13 — The forward pass with loss](13_forward_pass_with_loss.md).

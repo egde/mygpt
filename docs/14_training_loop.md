@@ -85,9 +85,9 @@ The `len(data) - seq_len - 1` upper bound on `ix` ensures we never run past the 
 
 This is the same sampler used by Karpathy's nanoGPT — it is the canonical pattern for transformer training on a flat token stream.
 
-We add `get_batch` to `mygpt` so future chapters can re-use it.
+We add `get_batch` to `mygpt` so future chapters can re-use it. It joins `set_seed`, `to_ids`, and `VOCAB` in `src/mygpt/utils.py` — the home for small, model-agnostic helpers.
 
-**Append the following function to** 📄 `src/mygpt/__init__.py` (after `set_seed`, before `TokenEmbedding`):
+**Append the following function to** 📄 `src/mygpt/utils.py` (after `set_seed`):
 
 ```python
 def get_batch(
@@ -182,7 +182,7 @@ AdamW differs from SGD in three ways. We won't derive any of it; the practical t
 2. **Momentum.** AdamW also maintains an exponentially-weighted average of recent gradients, and updates parameters using that average instead of the latest gradient. This smooths out the trajectory and helps the optimiser cross flat regions.
 3. **Weight decay.** AdamW directly shrinks every parameter toward zero by a small factor each step. This is a regularisation technique that prevents weights from drifting too large.
 
-Concretely: on the §14.5 loss curve below, AdamW reaches loss < 0.02 by step 100 where SGD takes hundreds more (you'll verify this in §14.7 exp 1). The per-parameter step size and the momentum are doing most of that work.
+Concretely: on the §14.5 loss curve below, AdamW reaches loss < 0.02 by step 100 where SGD takes hundreds more (you will verify this in §14.7 exp 1). The per-parameter step size and the momentum are doing most of that work.
 
 The PyTorch API is identical to `SGD`:
 
@@ -436,4 +436,4 @@ Then we have a full generation pipeline: `mygpt` package + trained model → tex
 > 4. With our 2240-parameter `GPT(V=4, C=8, h=2, N=2)` and 200 AdamW steps, the loss on the cycle corpus drops from `5.27` to `0.0035` — and `argmax` predicts every token in the cycle correctly.
 > 5. `mygpt.get_batch(data, B, T)` is the canonical sampler we will use in Chapter 15 too.
 
-On to [Chapter 15 — Generation: sampling text from a trained model](15_generation.md) *(coming soon)*.
+On to [Chapter 15 — Generation: sampling text from a trained model](15_generation.md).

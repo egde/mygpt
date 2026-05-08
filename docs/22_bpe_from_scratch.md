@@ -292,9 +292,11 @@ After each experiment, restore any file you changed.
 
 We have the algorithm. The next chapter, **Chapter 23 — `BPETokenizer` in `mygpt`**, packages it up into a `mygpt.BPETokenizer` class with the same shape as `CharTokenizer` (constructor, `encode`, `decode`, `save`, `load`) and adds a `--tokenizer {char, bpe}` flag to the CLI. By the end of Ch.23 we will have trained a BPE tokenizer on Tiny Shakespeare with 1024 merges and confirmed it reduces the encoded sequence length by roughly 2.7×.
 
-Looking ahead — what to remember from this chapter:
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. BPE is "iteratively merge the most-frequent adjacent pair" and nothing more sophisticated.
+> 2. The output of BPE training is a **list of merge rules in order**; that list, plus the initial alphabet, IS the tokenizer.
+> 3. Frequent strings become single tokens; rare strings stay broken-up — this trade-off is what makes the tokenizer compact *and* able to handle arbitrary input.
+> 4. Production BPE (GPT-2, tiktoken) replaces character-level with byte-level and `</w>` with a regex pre-split; the algorithm itself is unchanged.
 
-1. BPE is "iteratively merge the most-frequent adjacent pair" and nothing more sophisticated.
-2. The output of BPE training is a **list of merge rules in order**; that list, plus the initial alphabet, IS the tokenizer.
-3. Frequent strings become single tokens; rare strings stay broken-up — this trade-off is what makes the tokenizer compact *and* able to handle arbitrary input.
-4. Production BPE (GPT-2, tiktoken) replaces character-level with byte-level and `</w>` with a regex pre-split; the algorithm itself is unchanged.
+On to [Chapter 23 — `BPETokenizer` in `mygpt`](23_bpe_tokenizer_in_mygpt.md).

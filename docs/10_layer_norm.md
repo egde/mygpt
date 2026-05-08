@@ -386,4 +386,4 @@ That is the body of one GPT-2 layer. After Chapter 11 we just need position embe
 > 3. GPT-2 uses **pre-norm**: `x = x + sub(LN(x))`. The residual stream's scale drifts (we measured 1.69 over 30 layers, vs 2.21 without LN), but gradients flow cleanly.
 > 4. `mygpt.LayerNorm` is a hand-rolled module that matches `nn.LayerNorm` to float-32 precision (`torch.allclose(..., atol=1e-5) == True`).
 
-On to [Chapter 11 — Putting it together: the transformer block](11_transformer_block.md) *(coming soon)*.
+On to [Chapter 11 — Putting it together: the transformer block](11_transformer_block.md).

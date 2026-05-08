@@ -138,7 +138,9 @@ itos:        {0: ' ', 1: '!', 2: 'A', 3: 'I', 4: 'e', 5: 'l', 6: 'o', 7: 'v'}
 
 We package this into a class that exposes a clean four-method API: `encode`, `decode`, `save`, `load`. Plus a class-method constructor `from_text(text)` that builds the alphabet for you.
 
-**Append the following to** 📄 `src/mygpt/__init__.py` (after the `generate` function, before `main`):
+Tokenizers are a self-contained concern (no model code touches them directly), so they get their own module file (`src/mygpt/tokenizer.py`).
+
+**Append the following to** 📄 `src/mygpt/tokenizer.py`:
 
 ```python
 import json
@@ -428,4 +430,4 @@ Chapter 18 wraps everything in a CLI and adds checkpointing, so you can `mygpt t
 > 3. The tokenizer must be saved alongside the model. A model whose token id 5 means `'t'` is gibberish if loaded with a tokenizer where id 5 means `'q'`.
 > 4. Real GPT-2 uses BPE (byte-pair encoding), a sub-word tokenizer with 50,257 ids — the same architecture, just a much bigger vocabulary.
 
-On to [Chapter 17 — Training on a real text file](17_training_on_real_text.md) *(coming soon)*.
+On to [Chapter 17 — Training on a real text file](17_training_on_real_text.md).

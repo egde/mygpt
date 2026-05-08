@@ -536,4 +536,4 @@ The transformer block has three pieces and we have built two. Chapter 10 introdu
 > 3. A residual connection is `out = x + sublayer(x)`. It preserves activation scale across depth and lets gradients flow past the sublayer at training time.
 > 4. `mygpt.MLP(embed_dim, dropout=0.0)` has $8 C^2 + 5 C$ parameters; for $C = 4$ that is 148 parameters.
 
-On to [Chapter 10 — Layer normalization](10_layer_norm.md) *(coming soon)*.
+On to [Chapter 10 — Layer normalization](10_layer_norm.md).

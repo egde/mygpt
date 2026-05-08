@@ -19,7 +19,7 @@ Nothing in `mygpt` changes for this chapter. Everything we built in Ch.5–16 is
 
 ## 17.1 Setup
 
-If you finished Chapter 16, you already have everything: `mygpt/` with `CharTokenizer`, `GPT`, `get_batch`, `generate`. There is no `__init__.py` change in this chapter.
+If you finished Chapter 16, you already have everything: `mygpt/` with `CharTokenizer`, `GPT`, `get_batch`, `generate`. No package source changes in this chapter.
 
 If you skipped, recreate the state from a clean directory:
 
@@ -381,4 +381,4 @@ After Chapter 18, the package is **done** — the §1.10 promise ("a Python pack
 > 3. Loss reductions are *exponential* in their effect on per-token probability — `0.1` loss at step 100 buys far less than `0.1` loss at step 2000.
 > 4. A trained checkpoint is meaningless without its tokenizer. Save them together; load them together.
 
-On to [Chapter 18 — Checkpoints, inference, and a CLI](18_cli_and_checkpoints.md) *(coming soon)*.
+On to [Chapter 18 — Checkpoints, inference, and a CLI](18_cli_and_checkpoints.md).

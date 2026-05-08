@@ -291,7 +291,9 @@ Three design choices worth flagging:
 - **The context-window crop in the first three lines** is GPT-2's standard behaviour: if the sequence has grown longer than what the model can process (`max_seq_len`), we keep only the *last* `max_seq_len` tokens. The earlier tokens are forgotten. (Real models use much larger context windows so this only matters in very long generation.)
 - **`torch.no_grad()` matters.** Generation does not need gradients; turning autograd off speeds up the forward pass and avoids holding onto intermediate activations.
 
-**Append the following to** 📄 `src/mygpt/__init__.py` (after the `GPT` class, before `main`):
+`generate` is the inference-time counterpart to the training loop, so it gets its own module file (`src/mygpt/generate.py`).
+
+**Append the following to** 📄 `src/mygpt/generate.py`:
 
 ```python
 def generate(
@@ -511,4 +513,4 @@ We can train. We can generate. The remaining three chapters move from "tutorial-
 > 3. `mygpt.generate(model, prompt_ids, max_new_tokens, temperature=1.0, top_k=None)` packages all four strategies into one function with sensible defaults.
 > 4. Generation past the *trained* context length (here, T=8 because we trained on 8-token chunks) drifts because position embeddings at higher indices were never trained. Real models avoid this by training at the full max_seq_len.
 
-On to [Chapter 16 — A reusable character tokenizer](16_character_tokenizer.md) *(coming soon)*.
+On to [Chapter 16 — A reusable character tokenizer](16_character_tokenizer.md).

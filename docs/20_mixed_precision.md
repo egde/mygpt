@@ -79,9 +79,9 @@ A `GradScaler` is needed for fp16 (because fp16 overflows when gradients are big
 
 ## 20.4 Wiring `--precision` into the CLI
 
-Three small edits to `src/mygpt/__init__.py`. First, replace the body of the training loop in `_train_command` to wrap the forward in autocast when `args.precision == "bf16"`. Add a `print(f"precision: ...")` line so the run log says what it did.
+Three small edits to `src/mygpt/cli.py`. First, replace the body of the training loop in `_train_command` to wrap the forward in autocast when `args.precision == "bf16"`. Add a `print(f"precision: ...")` line so the run log says what it did.
 
-**Replace `_train_command` in** 📄 `src/mygpt/__init__.py`:
+**Replace `_train_command` in** 📄 `src/mygpt/cli.py`:
 
 ```python
 def _train_command(args) -> None:
@@ -131,7 +131,7 @@ def _train_command(args) -> None:
 
 The change is one new `print` line and one `if/else` around the forward call. Notice that **`loss.backward()` and `optimizer.step()` are *outside* the autocast block.** That's by design — gradients and weight updates stay in fp32.
 
-**Replace `_generate_command` in** 📄 `src/mygpt/__init__.py`:
+**Replace `_generate_command` in** 📄 `src/mygpt/cli.py`:
 
 ```python
 def _generate_command(args) -> None:
@@ -321,9 +321,11 @@ We have device-aware (Ch.19) and precision-aware (Ch.20) training. The infrastru
 
 The next chapter, **Chapter 21 — Training-loop hardening**, fixes the *training* itself: validation loss, cosine LR schedule with warmup, gradient clipping. After Ch.21 the loss curves stop being noisy aggregations and start being trustworthy diagnostic signals.
 
-Looking ahead — what to remember from this chapter:
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. bf16 is fp32 with the mantissa truncated. Same range, less precision. Half the bytes per tensor.
+> 2. `torch.autocast(device_type=..., dtype=torch.bfloat16)` wraps the forward; backward + optimizer stay in fp32.
+> 3. fp32 stays the default so existing chapters bit-reproduce. bf16 is opt-in.
+> 4. **bf16 is slower than fp32 at toy scale** because autocast overhead dominates. The win arrives at Ch.28's larger model. The infrastructure we built today is what makes that win one flag away.
 
-1. bf16 is fp32 with the mantissa truncated. Same range, less precision. Half the bytes per tensor.
-2. `torch.autocast(device_type=..., dtype=torch.bfloat16)` wraps the forward; backward + optimizer stay in fp32.
-3. fp32 stays the default so existing chapters bit-reproduce. bf16 is opt-in.
-4. **bf16 is slower than fp32 at toy scale** because autocast overhead dominates. The win arrives at Ch.28's larger model. The infrastructure we built today is what makes that win one flag away.
+On to [Chapter 21 — Training-loop hardening](21_training_loop_hardening.md).

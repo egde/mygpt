@@ -65,7 +65,7 @@ There is no theory that *RMSNorm is better*. The argument is pragmatic: same tra
 
 Identical shape to `LayerNorm` from §10 — a `nn.Module` with one trainable `weight` parameter. The forward pass is two lines.
 
-**Append the following class to** 📄 `src/mygpt/__init__.py` (right after the existing `LayerNorm` class, before `TransformerBlock`):
+**Append the following class to** 📄 `src/mygpt/norm.py` (right after the existing `LayerNorm` class):
 
 ```python
 class RMSNorm(nn.Module):
@@ -102,7 +102,7 @@ Three things to read off:
 
 We want `GPT` and `TransformerBlock` to be able to use either norm without duplicating their constructors. A small factory function does the dispatch.
 
-**Append the following helper to** 📄 `src/mygpt/__init__.py` (right after `RMSNorm`, before `TransformerBlock`):
+**Append the following helper to** 📄 `src/mygpt/norm.py` (right after `RMSNorm`):
 
 ```python
 def _make_norm(embed_dim: int, norm_type: str) -> nn.Module:
@@ -122,7 +122,7 @@ The leading underscore signals "internal helper" — students should pass `norm_
 
 `TransformerBlock` and `GPT` both currently hard-code `LayerNorm`. We change them to accept a `norm_type` parameter and dispatch via `_make_norm`. Default `"layer"` so existing call sites work unchanged.
 
-**Replace `TransformerBlock` in** 📄 `src/mygpt/__init__.py`:
+**Replace `TransformerBlock` in** 📄 `src/mygpt/block.py`:
 
 ```python
 class TransformerBlock(nn.Module):
@@ -144,7 +144,7 @@ class TransformerBlock(nn.Module):
 
 (One new constructor parameter, two `_make_norm` calls replacing direct `LayerNorm` instantiation, and a stored `self.norm_type` for introspection. Forward is unchanged.)
 
-**Replace `GPT.__init__` in** 📄 `src/mygpt/__init__.py`:
+**Replace `GPT.__init__` in** 📄 `src/mygpt/model.py`:
 
 ```python
 class GPT(nn.Module):
@@ -180,7 +180,7 @@ A model trained with RMSNorm has a *different* set of parameters from one traine
 
 We add one new field, `norm_type`, to the saved config. **Crucially**, when loading we read it with `.get(..., "layer")` — pre-Ch.24 checkpoints don't have this field, and we want them to default to `LayerNorm` (their original behavior).
 
-**Replace `save_checkpoint` in** 📄 `src/mygpt/__init__.py`:
+**Replace `save_checkpoint` in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None:
@@ -204,7 +204,7 @@ def save_checkpoint(model: "GPT", tokenizer: "CharTokenizer", path: str) -> None
 
 The `getattr(..., "layer")` is defensive — a model created in Ch.23 code wouldn't have a `norm_type` attribute; we fall back to `"layer"`.
 
-**Replace `load_checkpoint` in** 📄 `src/mygpt/__init__.py`:
+**Replace `load_checkpoint` in** 📄 `src/mygpt/checkpoint.py`:
 
 ```python
 def load_checkpoint(path: str) -> tuple["GPT", "CharTokenizer"]:
@@ -428,11 +428,13 @@ The first 14 characters (`ROMEO:\nThy momed`) match the LayerNorm sample exactly
 
 ## 24.13 What's next
 
-The next chapter, **Chapter 25 — RoPE: rotary position embeddings**, replaces the *learned* position embedding (Ch.12) with a *parameter-free* rotation of the query and key vectors. RoPE has the killer property that the §15.9 "untrained position embedding" failure mode disappears — the model can generate at any position, including positions beyond what it was trained on, because there are no learned position parameters at all.
+The next chapter, **Chapter 25 — RoPE: rotary position embeddings**, replaces the *learned* position embedding (Ch.12) with a *parameter-free* rotation of the query and key vectors. RoPE has the structural property that the §15.9 "untrained position embedding" failure mode disappears — the model can generate at any position, including positions beyond what it was trained on, because there are no learned position parameters at all.
 
-Looking ahead — what to remember from this chapter:
+> **Looking ahead — what to remember from this chapter**
+>
+> 1. RMSNorm is LayerNorm minus the mean subtraction and minus the bias.
+> 2. Half the parameters per norm instance, half the forward-pass arithmetic, comparable training quality.
+> 3. `--norm rms` opt-in; `--norm layer` (default) bit-reproduces every prior chapter's run.
+> 4. Checkpoints carry their `norm_type` in the config; pre-Ch.24 checkpoints default to `"layer"` on load, so old `.ckpt` files keep working.
 
-1. RMSNorm is LayerNorm minus the mean subtraction and minus the bias.
-2. Half the parameters per norm instance, half the forward-pass arithmetic, comparable training quality.
-3. `--norm rms` opt-in; `--norm layer` (default) bit-reproduces every prior chapter's run.
-4. Checkpoints carry their `norm_type` in the config; pre-Ch.24 checkpoints default to `"layer"` on load, so old `.ckpt` files keep working.
+On to [Chapter 25 — RoPE: rotary position embeddings](25_rope.md).
